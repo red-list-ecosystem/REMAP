@@ -1,0 +1,25 @@
+runtime: python27
+api_version: 1
+threadsafe: true
+
+handlers:
+- url: /static/
+  static_dir: static
+  secure: always
+- url: /fonts/
+  static_dir: static/fonts
+  secure: always
+- url: /bower_components/
+  static_dir: bower_components
+  secure: always
+- url: /.*
+  script: server.app
+  secure: always
+
+libraries:
+- name: jinja2
+  version: "2.6"
+- name: webapp2
+  version: "2.5.2"
+- name: pycrypto
+  version: "2.6"

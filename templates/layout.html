@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{% block title %} reMap {% endblock %}</title>
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="/static/css/materialize.min.css">
+  <link rel="stylesheet" href="/static/css/home-style.css">
+</head>
+<body>
+  <script> // Google analytics
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-98429542-1', 'auto');
+    ga('send', 'pageview');
+  </script>
+  <nav class="light-green darken-2">
+    <div class="nav-wrapper container">
+      <a href="/home" class="brand-logo">reMap</a>
+      <a href="#" data-activates="mobile-demo" class="button-collapse">
+        <i class="material-icons">menu</i>
+      </a>
+      <ul class="right hide-on-med-and-down">
+        <li><a href="/about">About</a></li>
+        <li><a href="/methods">Methods</a></li>
+        <li><a href="/">Tool</a></li>
+      </ul>
+      <ul class="side-nav" id="mobile-demo">
+        <li><a href="/home">Home</a></li>
+        <li><a href="/">Tool</a></li>
+        <li><div class="divider"></div></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/methods">Methods</a></li>
+      </ul>
+    </div>
+  </nav>
+  {% block content %}
+  {% endblock %}
+  <!-- Footer -->
+    <footer class="light-green  darken-2 page-footer">
+    <div class="container">
+      <div class="row">
+        <div class="col l6 s12">
+          <h5 class="white-text">Footer Content</h5>
+          <p class="white-text">You can use rows and columns here to organize your footer content.</p>
+        </div>
+        <div class="col l4 offset-l2 s12">
+          <h5 class="white-text">Links</h5>
+          <ul>
+            <li><a class="white-text" href="#!">Link 1</a></li>
+            <li><a class="white-text" href="#!">Link 2</a></li>
+            <li><a class="white-text" href="#!">Link 3</a></li>
+            <li><a class="white-text" href="#!">Link 4</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer-copyright">
+      <div class="container">
+      <div class="white-text">© 2014 Copyright Text</div>
+      <a class="white-text right" href="#!">More Links</a>
+      </div>
+    </div>
+  </footer>
+  <!--  Scripts-->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script src="/static/js/materialize.min.js"></script>
+  <script src="/static/js/home.js"></script>
+</body>
+</html>

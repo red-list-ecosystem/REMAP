@@ -1,0 +1,101 @@
+{% extends 'templates/layout.html' %}
+{% block content %}
+<div id="index-banner" class="parallax-container valign-wrapper">
+  <div class="container">
+    <div class="row center">
+      <h1 class="header white-text">Methods</h1>
+    </div>
+  </div>
+  <div class="parallax"><img src="/static/images/NickMurray-62.jpg"></div>
+</div>
+<div class="container">
+
+<div class="divider"></div>
+<div class="section">
+  <h5>Overview</h5>
+  <p>
+    The provided labeled points are combined with other satellite datasets used to train a <a href="https://en.wikipedia.org/wiki/Random_forest">random forest</a>.
+  <p>
+    The random forest is then used to classify the rest of the image into your classes/labels.
+
+</div>
+<div class="divider"></div>
+  <h5 id="predictors">Predictors</h5>
+  <table class="highlight" id="predictor-table">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Short Name</th>
+        <th>Long Name</th>
+        <th>Earth Engine ID</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for predictor in predictors %}
+        <tr>
+          <td>{{ predictor.type }}</td>
+          <td>{{ predictor.short_name }}</td>
+          <td>{{ predictor.long_name }}</td>
+          <td>{{ predictor.ee_import }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+<div class="divider"></div>
+<div class="section">
+  <h5>Datasets</h5>
+  <div class="card horizontal">
+    <div class="card-image">
+    </div>
+    <div class="card-stacked">
+      <div class="card-content">
+        <span class="card-title">Landsat</span>
+        <p>We combined the provided datapoints with  with Landsat 5, 7, 8</p>
+        From Wikipedia
+        <p>
+          The Landsat program is the longest-running enterprise for acquisition of satellite imagery of Earth. On July 23, 1972 the Earth Resources Technology Satellite was launched. This was eventually renamed to Landsat.
+        </p>
+          The most recent, Landsat 8, was launched on February 11, 2013. The instruments on the Landsat satellites have acquired millions of images. The images, archived in the United States and at Landsat receiving stations around the world, are a unique resource for global change research and applications in agriculture, cartography, geology, forestry, regional planning, surveillance and education, and can be viewed through the USGS 'EarthExplorer' website.
+        </p>
+        <p>
+          Landsat 7 data has eight spectral bands with spatial resolutions ranging from 15 to 60 meters; the temporal resolution is 16 days. Landsat images are usually divided into scenes for easy downloading. Each Landsat scene is about 115 miles long and 115 miles wide (or 100 nautical miles long and 100 nautical miles wide, or 185 kilometers long and 185 kilometers wide).
+        </p>
+      </div>
+      <div class="card-action">
+        <a href="https://landsat.usgs.gov/">Landsat website</a>
+      </div>
+  </div>
+</div>
+<div class="card horizontal">
+  <div class="card-image">
+    <img src="">
+  </div>
+  <div class="card-stacked">
+    <div class="card-content">
+      <span class="card-title">BIOCLIM</span>
+      <p>
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam accumsan urna ut arcu pharetra condimentum. Proin eu bibendum arcu. Mauris ante felis, fermentum ac urna quis, auctor consectetur purus. Ut vitae quam et nunc sagittis ultricies a a leo. Sed gravida dapibus porta. Nulla facilisi. Aliquam vel leo ac tortor mattis feugiat. In feugiat ipsum dapibus felis convallis pellentesque. Morbi efficitur, odio quis rhoncus rhoncus, magna lorem laoreet ligula, vitae fermentum nulla dui eget enim.
+
+    </div>
+    <div class="card-action">
+      <a href="http://worldclim.org/bioclim">BIOCLIM website</a>
+    </div>
+  </div>
+</div>
+<div class="divider"></div>
+<div class="section">
+  <h5>Feedback</h5>
+    
+  </div>
+</div> 
+<div class="divider"></div>
+<div class="section">
+  <h5>Credits</h5>
+    our names, websites, github ect.
+    <ul>
+      <li>Color Brewer (default colours)</li>
+    </ul>
+  </div>
+</div> 
+{% endblock %}

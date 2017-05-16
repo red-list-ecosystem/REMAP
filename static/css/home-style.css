@@ -1,0 +1,21 @@
+parallax-container {
+  height: 400px;
+  opacity: 0.9;
+}
+/* sticky footer*/
+body {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.case-study {
+  width: 100%;
+}
+main {
+  flex: 1 0 auto;
+}
+
+three-section {
+  padding: 3em, 0em;
+}

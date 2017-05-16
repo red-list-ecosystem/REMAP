@@ -1,0 +1,243 @@
+body {
+  /* Use the Roboto font that is loaded in the <head> */
+  font-family: 'Roboto', sans-serif;
+  margin: 0px;
+  overflow: hidden;
+}
+#map {
+  height: 100%;
+  width: calc(100% - 300px);
+  left: 300px;
+  position: absolute;
+  top: 0;
+}
+@media only screen and (max-width : 992px) {
+  #map {
+    left: 0px;
+    width: 100%;
+  }
+  #spinner {
+    left: 0;
+  }
+}
+
+#histchart2 {
+  margin: 0px;
+}
+#histchart {
+  cursor: pointer;
+  margin: 0;
+}
+#predictor-control {
+  margin-bottom: 15px;
+}
+#search {
+  border: 0;
+  box-sizing: border-box;
+  padding-left: 10px;
+}
+#modal1 {
+  max-height: 80%;
+  width: 75%;
+}
+#modal3 .modal-content h4 {
+  text-align: center
+}
+.logo {
+  width: 300px;
+}
+.advContainer {
+  margin: 0px 15px;
+  display: table;
+  table-layout: fixed;
+}
+  .advContainer .button-group {
+    margin-left: 15px;
+    margin-right: 15px;
+  }
+  .advContainer .input-field {
+    width: 18.3%;
+    display: table-cell;
+    padding: 0px 3px; 
+  }
+
+.btn-flat {
+  text-align: center;
+}
+.button-collapse {
+  background-color: white;
+  position: absolute;
+  margin-top: 5px;
+  height: 28px;
+  width: 28px;
+  box-shadow: 0px 0px 20px black;
+}
+  .button-collapse i {
+    font-size: 2em;
+    color: black;
+  }
+
+.button-group {
+  margin-left: 15px;
+  margin-right: 15px;
+  margin-bottom: 10px;
+  white-space: nowrap;
+}
+
+.button-group a {
+  width: 33%;
+}
+.button-group > a > input {
+  display: none;
+}
+.classVal, .classVal a, .classVal a i {
+  height: 35px !important;
+  line-height: 35px !important;
+  cursor: pointer;
+}
+.classVal a {
+  padding-right: 15px !important;
+}
+.classVal a i {
+  margin-left: 5px !important;
+  margin-right: 0px !important;
+}
+.classVal a span {
+  display: inline-block;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.g-sign-out {
+  display: none;
+}
+.gimg {
+  text-align: center;
+}
+.glogo {
+  width: 18px;
+  height: 18px;
+}
+.input-field {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+.inset {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+.layer p {
+  margin-top: 5px;
+  margin-bottom: 0px;
+}
+.layer p label {
+  font-size: 0.8rem;
+}
+.legend-colour {
+  float: left;
+  width: 27px;
+  height: 27px;
+  border: 1px solid rgba(0, 0, 0, .2);
+  margin: 4px 3px 4px 0px;
+}
+.legends-list {
+  line-height: 17px
+  font-size: 12px;
+}
+.material-icons {
+  cursor: pointer;
+}
+.minicolors-theme-default.minicolors {
+  display: block;
+  text-align: center;
+  margin-bottom: 7px;
+}
+.preloader-wrapper {
+  z-index: 1;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 300px;
+  margin: auto;
+}
+.preloader-wrapper.small {
+  display: none;
+  left: 229px;
+  height: 25px;
+  width: 25px;
+}
+.row {
+  margin-bottom: 0px;
+}
+/
+.row:hover {
+  background: #f0f0f0;
+}
+
+.search-wrapper.card {
+  margin: 0px 12px;
+  border: 0;
+}
+.search-wrapper.card i {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+.search-wrapper.card input {
+  margin-bottom: 0;
+}
+.side-nav li a i.material-icons.right {
+  display: none;
+  margin-right: 0px;
+}
+.topless {
+  margin-top: 0px !important;
+}
+.wrapper {
+  display: flex;
+}
+.collapse-content {
+  padding: 15px;
+  border: 1px solid #dedede;
+}
+#type-selector {
+  color: #fff;
+  background-color: #4d90fe;
+  padding: 5px 11px 0px 11px;
+}
+#type-selector label {
+  font-family: Roboto;
+  font-size: 13px;
+  font-weight: 300;
+}
+#target {
+  width: 345px;
+}
+.col.s4 {z
+  padding: 0 1em;
+}
+.col.s4 > a {
+  max-width: 80% !important;
+  padding: 0 10%;
+}
+.col.s4 > div {
+  text-align: left;
+}
+.row {
+  padding-bottom: 1em;
+}
+label, input::placeholder{
+  color: #444;
+  font-weight: 400;
+  line-height: 30px;
+}
+.noUi-target.noUi-horizontal .noUi-active .noUi-tooltip {
+  top: -8px;
+}
+
+.noUi-target.noUi-horizontal .noUi-active .noUi-tooltip span {
+  transform: rotate(45deg) translate(-4px, -4px);
+}

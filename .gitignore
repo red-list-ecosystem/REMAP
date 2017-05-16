@@ -1,0 +1,5 @@
+*.pyc
+*.sh
+client_secrets.json
+privatekey.pem
+config.py
