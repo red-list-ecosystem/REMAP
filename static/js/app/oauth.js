@@ -15,7 +15,7 @@ function oauthFalse () {
 
 function oauthTrue () {
   $('#g-sign-in').hide()
-  $('#g-download .waves-effect').addClass('subheader')
+  $('#g-download .waves-effect').removeClass('subheader')
   $('#g-sign-out').show()
 }
 

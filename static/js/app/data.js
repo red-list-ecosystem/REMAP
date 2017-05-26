@@ -139,14 +139,7 @@ function buildTrainingCSV () {
               position: {lat: parseFloat(line[0]), lng: parseFloat(line[1])},
               map: map,
               draggable: true,
-              icon: {
-                path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
-                fillColor: classList[classIndex].colour,
-                fillOpacity: 0.6,
-                strokeColor: 'white',
-                strokeWeight: 0.5,
-                scale: 4
-              }
+              icon: getIcon(classList[classIndex].colour)
             })
             classList[classIndex].markers.push(marker)
           } else {
@@ -259,7 +252,8 @@ function buildChart (data) {
   var opts = {
     title: 'Area in Hectares',
     legend: { position: 'none' },
-    width: 300
+    width: 300,
+    hAxis: { slantedText: true, slantedTextAngle: 90 }
   }
   chart.draw(data2, opts)
   var chart2 = new google.visualization.ColumnChart($('#histchart2')[0])
@@ -267,7 +261,8 @@ function buildChart (data) {
     title: 'Area in Hectares',
     legend: { position: 'none' },
     width: $(window).width() * 0.75,
-    height: $(window).height() * 0.8
+    height: $(window).height() * 0.8,
+    hAxis: { slantedText: true, slantedTextAngle: 90 }
   }
   chart2.draw(data2, opts2)
   $('#histchart').on('click', function () {
@@ -357,10 +352,36 @@ function downloadDrive () {
       Materialize.toast('Error downloading to Drive.', 5000, 'rounded')
     })
     .done(function () {
-      $('#gspinner').hide()
-      $('#gtick').show()
-      $('#g-download a').removeClass('subheader')
-      Materialize.toast('Drive download completed!', 5000, 'rounded')
+      downloadLoop()
+    })
+}
+
+function downloadLoop () {
+  $.get('/export')
+    .fail(function (err) {
+      // what does a fail mean in this case? probably just try again?
+      console.log(err)
+      setTimeout(downloadLoop, 10000)
+    })
+    .done(function (data) {
+      if (data == 'IN_PROGRESS') {
+        setTimeout(downloadLoop, 10000)
+      } else {
+        $('#gspinner').hide()
+        $('#g-download a').removeClass('subheader')
+        if (data == 'ERROR') {
+          $('#gcross').show()
+          Materialize.toast('Error downloading from Drive.', 5000, 'rounded')
+        } else if (data == 'COMPLETED') {
+          $('#gtick').show()
+          Materialize.toast('Drive download completed!', 5000, 'rounded')
+        } else if (data == 'NOT_STARTED') {
+          Materialize.toast('Drive download did not start.', 5000, 'rounded')
+        } else {
+          // should never be reached
+          Materialize.toast('Sorry, something went wrong (' + data + ').', 5000, 'rounded')
+        }
+      }
     })
 }
 
@@ -393,6 +414,10 @@ function validateJSON (json) {
   return true
 }
 
+/**
+  Loads a data set from JSON.
+  returns true if successful, false otherwise
+*/
 function loadFromJSON (data) {
   clearAllClasses()
   if (region) {
@@ -419,14 +444,7 @@ function loadFromJSON (data) {
         position: new google.maps.LatLng(classList[i].markers[j][0], classList[i].markers[j][1]),
         map: map,
         draggable: true,
-        icon: {
-          path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
-          fillColor: classList[i].colour,
-          fillOpacity: 0.6,
-          strokeColor: 'white',
-          strokeWeight: 0.5,
-          scale: 4
-        }
+        icon: getIcon(classList[i].colour)
       })
     }
   }

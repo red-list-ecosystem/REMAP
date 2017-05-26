@@ -21,14 +21,16 @@
     <!-- JS IMPORTS Are just before the closing of the body tag -->
   </head>
   <body>
-    <script> // Google analytics
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-      ga('create', 'UA-98429542-1', 'auto');
-      ga('send', 'pageview');
-    </script>
+    {% if not DEBUG %}
+      <script> // Google analytics
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-98429542-1', 'auto');
+        ga('send', 'pageview');
+      </script>
+    {% endif %}
     <div class="wrapper">
       <div class="wrapper-left">
         <ul id="slide-out" class="side-nav fixed">
@@ -195,7 +197,7 @@
                     <li><a class="waves-effect" id="jsonDownload" download="remap_training.json" onclick="dataDownload()"><i class="material-icons">file_download</i>Download JSON</a></li>
                     <li id="g-info"><a class="subheader">To Download the GeoTIFF:</a></li>
                     <li id="g-sign-in"><a class="waves-effect" href="{{ oauth_url }}" onclick="loginClick()"><i class="gimg"><img class="glogo" src="static/g-logo.png"></i>Sign in with Google</a></li>
-                    <li id="g-download"><a class="subheader waves-effect" onclick="downloadDrive()"><i class="material-icons">cloud_download</i>Export GeoTIFF To Drive
+                    <li id="g-download"><a class="subheader waves-effect" onclick="downloadDrive()"><i class="material-icons">cloud_download</i>Drive export GeoTIFF
                       <div id="gspinner" class="preloader-wrapper small active">
                         <div class="spinner-layer spinner-blue-only">
                           <div class="circle-clipper left">

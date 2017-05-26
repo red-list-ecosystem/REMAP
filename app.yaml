@@ -12,6 +12,10 @@ handlers:
 - url: /bower_components/
   static_dir: bower_components
   secure: always
+- url: /exportworker
+  script: server.app
+  secure: always
+  login: admin
 - url: /.*
   script: server.app
   secure: always

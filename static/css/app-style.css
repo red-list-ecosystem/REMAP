@@ -216,7 +216,7 @@ body {
 #target {
   width: 345px;
 }
-.col.s4 {z
+.col.s4 {
   padding: 0 1em;
 }
 .col.s4 > a {
@@ -229,7 +229,7 @@ body {
 .row {
   padding-bottom: 1em;
 }
-label, input::placeholder{
+label {
   color: #444;
   font-weight: 400;
   line-height: 30px;

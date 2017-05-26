@@ -8,7 +8,7 @@
 */
 
 function addClass (name) {
-  name = typeof name === 'undefined' ?  'Class ' + (classList.length + 1) : name;
+  name = typeof name === 'undefined' ? 'Class ' + (classList.length + 1) : name;
   var colour = classList.length < colours.length ? colours[classList.length] : '#ff0000'
   var item = {name: name, colour: colour, markers: []}
   classList.push(item)
@@ -115,14 +115,7 @@ function setClass () {
   $('.classVal:eq(' + classNum + ') a #className').html(classList[classNum].name)
   closeColourModal()
   for (var i = 0; i < classList[classNum].markers.length; i++) {
-    classList[classNum].markers[i].setIcon({
-      path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
-      fillColor: classList[classNum].colour,
-      fillOpacity: 0.6,
-      strokeColor: 'white',
-      strokeWeight: 0.5,
-      scale: 4
-    })
+    classList[classNum].markers[i].setIcon(getIcon(classList[classNum].colour))
   }
   refreshAssessmentSelect()
 }
@@ -239,6 +232,7 @@ function validateLine(line) {
   return validateLatLngPair(line.slice(0, 2))
 }
 
+/*  Builds a training region from a kml */
 function buildTrainingKML () {
   var reader = new FileReader()
   var file = $('#kml')[0].files[0]
@@ -291,14 +285,7 @@ function buildTrainingCSV () {
               position: {lat: parseFloat(line[0]), lng: parseFloat(line[1])},
               map: map,
               draggable: true,
-              icon: {
-                path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
-                fillColor: classList[classIndex].colour,
-                fillOpacity: 0.6,
-                strokeColor: 'white',
-                strokeWeight: 0.5,
-                scale: 4
-              }
+              icon: getIcon(classList[classIndex].colour)
             })
             classList[classIndex].markers.push(marker)
           } else {
@@ -411,7 +398,8 @@ function buildChart (data) {
   var opts = {
     title: 'Area in Hectares',
     legend: { position: 'none' },
-    width: 300
+    width: 300,
+    hAxis: { slantedText: true, slantedTextAngle: 90 }
   }
   chart.draw(data2, opts)
   var chart2 = new google.visualization.ColumnChart($('#histchart2')[0])
@@ -419,7 +407,8 @@ function buildChart (data) {
     title: 'Area in Hectares',
     legend: { position: 'none' },
     width: $(window).width() * 0.75,
-    height: $(window).height() * 0.8
+    height: $(window).height() * 0.8,
+    hAxis: { slantedText: true, slantedTextAngle: 90 }
   }
   chart2.draw(data2, opts2)
   $('#histchart').on('click', function () {
@@ -509,10 +498,36 @@ function downloadDrive () {
       Materialize.toast('Error downloading to Drive.', 5000, 'rounded')
     })
     .done(function () {
-      $('#gspinner').hide()
-      $('#gtick').show()
-      $('#g-download a').removeClass('subheader')
-      Materialize.toast('Drive download completed!', 5000, 'rounded')
+      downloadLoop()
+    })
+}
+
+function downloadLoop () {
+  $.get('/export')
+    .fail(function (err) {
+      // what does a fail mean in this case? probably just try again?
+      console.log(err)
+      setTimeout(downloadLoop, 10000)
+    })
+    .done(function (data) {
+      if (data == 'IN_PROGRESS') {
+        setTimeout(downloadLoop, 10000)
+      } else {
+        $('#gspinner').hide()
+        $('#g-download a').removeClass('subheader')
+        if (data == 'ERROR') {
+          $('#gcross').show()
+          Materialize.toast('Error downloading from Drive.', 5000, 'rounded')
+        } else if (data == 'COMPLETED') {
+          $('#gtick').show()
+          Materialize.toast('Drive download completed!', 5000, 'rounded')
+        } else if (data == 'NOT_STARTED') {
+          Materialize.toast('Drive download did not start.', 5000, 'rounded')
+        } else {
+          // should never be reached
+          Materialize.toast('Sorry, something went wrong (' + data + ').', 5000, 'rounded')
+        }
+      }
     })
 }
 
@@ -545,6 +560,10 @@ function validateJSON (json) {
   return true
 }
 
+/**
+  Loads a data set from JSON.
+  returns true if successful, false otherwise
+*/
 function loadFromJSON (data) {
   clearAllClasses()
   if (region) {
@@ -571,14 +590,7 @@ function loadFromJSON (data) {
         position: new google.maps.LatLng(classList[i].markers[j][0], classList[i].markers[j][1]),
         map: map,
         draggable: true,
-        icon: {
-          path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
-          fillColor: classList[i].colour,
-          fillOpacity: 0.6,
-          strokeColor: 'white',
-          strokeWeight: 0.5,
-          scale: 4
-        }
+        icon: getIcon(classList[i].colour)
       })
     }
   }
@@ -805,7 +817,6 @@ function predictorVis (reset) {
   $('#sigma').prop('disabled', val === 'natural')
   // set the select to disabled while we send the request for the vis layer
   select.prop('disabled', true)
-  $('#sigma').material_select()
   select.material_select()
   $('#spinner').show()
   $.post(
@@ -837,11 +848,14 @@ function predictorVis (reset) {
       Materialize.toast('Failed to get predictor layer.', 10000, 'rounded')
     }).always(function () { 
       // re-enable the predictor selector
+      $('#sigma').material_select()
       select.prop('disabled', false)
       select.material_select()
     })
 }
 
+/** Higher order function that allows for google maps to request for tiles of a map type.
+*/
 function buildGetTileUrl (mapid, token) {
   return function (tile, zoom) {
     var baseUrl = 'https://earthengine.googleapis.com/map'
@@ -849,6 +863,9 @@ function buildGetTileUrl (mapid, token) {
   }
 }
 
+/*
+* Allows a user to add markers of a class by clicking on the map.
+*/
 function addMarkers () {
   if (listenerHandle === false) {
     $('#map div .gm-style div').css('cursor', 'crosshair')
@@ -864,14 +881,7 @@ function addMarkers () {
           position: event.latLng,
           map: map,
           draggable: true,
-          icon: {
-            path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
-            fillColor: classList[idx].colour,
-            fillOpacity: 0.6,
-            strokeColor: 'white',
-            strokeWeight: 0.5,
-            scale: 4
-          }
+          icon: getIcon(classList[idx].colour)
         })
         classList[idx].markers.push(marker)
       }
@@ -886,7 +896,7 @@ function addMarkers () {
   }
 }
 
-// toggles the markers visibility
+// toggles the markers visibility on the map
 function markerVisibility () {
   var button = $('#marker-toggle')
   var toggle = button.attr('data') === '1'
@@ -921,6 +931,17 @@ function addClassifiedMap (data) {
   $('#classify').text('4. Reclassify!')
 }
 
+function getIcon(colour) {
+  return {
+      path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+      fillColor: colour,
+      fillOpacity: 0.6,
+      strokeColor: 'white',
+      strokeWeight: 0.5,
+      scale: 4
+    }
+}
+
 function getMapJSON () {
   return JSON.stringify({
     'classes': getClasses(),
@@ -929,7 +950,7 @@ function getMapJSON () {
 }
 
 function loginClick () {
-  window.onbeforeunload = null; // turn off the confimartion for the login redirect
+  window.onbeforeunload = null; // turn off the confirmation for the login redirect
   localStorage.setItem('mapData', getMapJSON())
 }
 
@@ -950,7 +971,7 @@ function oauthFalse () {
 
 function oauthTrue () {
   $('#g-sign-in').hide()
-  $('#g-download .waves-effect').addClass('subheader')
+  $('#g-download .waves-effect').removeClass('subheader')
   $('#g-sign-out').show()
 }
 
@@ -970,6 +991,7 @@ function signOut () {
   $('#g-download .waves-effect').addClass('subheader')
   $('#g-sign-out').hide()
 }
+
 /**
  Daniel Simpson,
  John Wilshire
@@ -982,7 +1004,6 @@ function signOut () {
 
 // Construct the polygon.
 function addRegion (polyCoords) {
-  // Construct the polygon.
   if (region) {
     region.setMap(null)
   }
@@ -1036,7 +1057,6 @@ function regionPath () {
   return region.getPath().getArray().map(
     function (x) { return {lat: x.lat(), lng: x.lng()} })
 }
-
 
 /* Brings the region into focus. */
 function reFocusRegion () {

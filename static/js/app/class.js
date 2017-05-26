@@ -115,14 +115,7 @@ function setClass () {
   $('.classVal:eq(' + classNum + ') a #className').html(classList[classNum].name)
   closeColourModal()
   for (var i = 0; i < classList[classNum].markers.length; i++) {
-    classList[classNum].markers[i].setIcon({
-      path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
-      fillColor: classList[classNum].colour,
-      fillOpacity: 0.6,
-      strokeColor: 'white',
-      strokeWeight: 0.5,
-      scale: 4
-    })
+    classList[classNum].markers[i].setIcon(getIcon(classList[classNum].colour))
   }
   refreshAssessmentSelect()
 }

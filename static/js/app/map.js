@@ -48,7 +48,6 @@ function predictorVis (reset) {
   $('#sigma').prop('disabled', val === 'natural')
   // set the select to disabled while we send the request for the vis layer
   select.prop('disabled', true)
-  $('#sigma').material_select()
   select.material_select()
   $('#spinner').show()
   $.post(
@@ -80,11 +79,14 @@ function predictorVis (reset) {
       Materialize.toast('Failed to get predictor layer.', 10000, 'rounded')
     }).always(function () { 
       // re-enable the predictor selector
+      $('#sigma').material_select()
       select.prop('disabled', false)
       select.material_select()
     })
 }
 
+/** Higher order function that allows for google maps to request for tiles of a map type.
+*/
 function buildGetTileUrl (mapid, token) {
   return function (tile, zoom) {
     var baseUrl = 'https://earthengine.googleapis.com/map'
@@ -92,6 +94,9 @@ function buildGetTileUrl (mapid, token) {
   }
 }
 
+/*
+* Allows a user to add markers of a class by clicking on the map.
+*/
 function addMarkers () {
   if (listenerHandle === false) {
     $('#map div .gm-style div').css('cursor', 'crosshair')
@@ -107,14 +112,7 @@ function addMarkers () {
           position: event.latLng,
           map: map,
           draggable: true,
-          icon: {
-            path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
-            fillColor: classList[idx].colour,
-            fillOpacity: 0.6,
-            strokeColor: 'white',
-            strokeWeight: 0.5,
-            scale: 4
-          }
+          icon: getIcon(classList[idx].colour)
         })
         classList[idx].markers.push(marker)
       }
@@ -129,7 +127,7 @@ function addMarkers () {
   }
 }
 
-// toggles the markers visibility
+// toggles the markers visibility on the map
 function markerVisibility () {
   var button = $('#marker-toggle')
   var toggle = button.attr('data') === '1'
@@ -164,6 +162,17 @@ function addClassifiedMap (data) {
   $('#classify').text('4. Reclassify!')
 }
 
+function getIcon(colour) {
+  return {
+      path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+      fillColor: colour,
+      fillOpacity: 0.6,
+      strokeColor: 'white',
+      strokeWeight: 0.5,
+      scale: 4
+    }
+}
+
 function getMapJSON () {
   return JSON.stringify({
     'classes': getClasses(),
@@ -172,6 +181,6 @@ function getMapJSON () {
 }
 
 function loginClick () {
-  window.onbeforeunload = null; // turn off the confimartion for the login redirect
+  window.onbeforeunload = null; // turn off the confirmation for the login redirect
   localStorage.setItem('mapData', getMapJSON())
 }

@@ -3,6 +3,7 @@ sys.path.append('lib') # lib to the path
 import remap, config
 from lib import drive
 from googleapiclient.discovery import build
+from google.appengine.api import taskqueue
 from google.appengine.ext import ndb
 from webapp2_extras import sessions
 import webapp2, jinja2
@@ -25,6 +26,9 @@ wsgiConfig = {}
 wsgiConfig['webapp2_extras.sessions'] = {
 	'secret_key': config.WSGI_KEY
 }
+
+classifyProgress = 'NOT_STARTED'
+exportProgress = 'NOT_STARTED'
 
 class Query(ndb.Model):
 	ipAddress = ndb.StringProperty()
@@ -326,15 +330,33 @@ class Logout(BaseHandler):
 		self.session.pop('credentials', None)
 		self.redirect('/')
 
-class Export(GetMapData):
+class Export(BaseHandler):
 	"""Allows for the exporting of a classified region as a geotiff to a users 
 		Google Drive.
 	"""
+	def get(self):
+		self.response.write(exportProgress)
+
 	def post(self):
+		global exportProgress
+		exportProgress = 'IN_PROGRESS'
+		taskqueue.add(
+			url = '/exportworker',
+			params = {
+				'data': self.request.body,
+				'ip': self.request.remote_addr,
+				'credentials': self.session['credentials'],
+				'email': self.session['email']
+			})
+		self.response.write(json.dumps({}))
+
+class ExportWorker(GetMapData):
+	def post(self):
+		global exportProgress
 		self.layers = []
 		self.response.headers['Content-Type'] = 'application/json'
-		data = json.loads(self.request.body)
 
+		data = json.loads(self.request.get('data'))
 		predictors = data['predictors']
 		classes = data['classList']
 
@@ -350,7 +372,7 @@ class Export(GetMapData):
 
 		train_fc = self.get_train(classes)
 		region_fc = self.get_region(data)
-		datastore(self.request.remote_addr, sum([ len( label['points'] ) for label in classes ]), len(classes), True, json.dumps(data['region']))
+		datastore(self.request.get('ip'), sum([ len( label['points'] ) for label in classes ]), len(classes), True, json.dumps(data['region']))
 		classified = remap.get_classified_from_fc(train_fc, predictors).clip(region_fc)
 		temp_file_prefix = str(uuid.uuid4())
 		file_name = 'REMAP GeoTIFF Export ' + time.ctime() + '.tif'
@@ -367,7 +389,7 @@ class Export(GetMapData):
 		# Kangaroo Island CSV points
 		# scale 30 took 1335.49342012 seconds (22 mins)
 		# scale 100 took 177.377995968 seconds (3 mins)
-		print('Starting Export ...')
+
 		task.start()
 		while task.active():
 			time.sleep(10)
@@ -377,9 +399,9 @@ class Export(GetMapData):
 			print('Done, Copying ...')
 
 			files = APP_DRIVE_HELPER.GetExportedFiles(temp_file_prefix)
-			credentials = oauth2client.client.OAuth2Credentials.from_json(self.session['credentials'])
+			credentials = oauth2client.client.OAuth2Credentials.from_json(self.request.get('credentials'))
 			for f in files:
-				APP_DRIVE_HELPER.GrantAccess(f['id'], self.session['email'])
+				APP_DRIVE_HELPER.GrantAccess(f['id'], self.request.get('email'))
 			user_drive_helper = drive.DriveHelper(credentials)
 			# TODO why are these two cases needed shouldnt the else cover the first case
 			# TODO upload the metadata file.
@@ -392,11 +414,11 @@ class Export(GetMapData):
 			for f in files:
 				APP_DRIVE_HELPER.DeleteFile(f['id'])
 			# writing a response is necessary so the Javascript doesnt error (yes, even on 200 OK responses)
-			self.response.write(json.dumps({}))
+			exportProgress = 'COMPLETED'
 			print('Done!')
 		else:
+			exportProgress = 'ERROR'
 			print('Error')
-			self.response.set_status(500)
 
 def handle_error(request, response, exception):
 	""" Sends the error for post requests back to the client in json format
@@ -423,6 +445,7 @@ app = webapp2.WSGIApplication([
 	('/oauth2callback', OAuth),
 	('/logout', Logout),
 	('/export', Export),
+	('/exportworker', ExportWorker),
 	## website endpoints
 	('/home', Home),
 	('/methods', Methods),
