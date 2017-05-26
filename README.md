@@ -1,6 +1,6 @@
 # REMAP: Remote Ecosystem Mapping and Assessment Pipeline
 
-Dev snapshot as of 27th March 2017.
+Milestone dev snapshots.
 
 Will error without updating config.py and creating your own authentication files and strings.
 
