@@ -7,10 +7,12 @@
  Init functions
 */
 
-var listenerHandle = false
+// list to store classes
 var classList = []
+var listenerHandle = false
 var classified = false
 var region = false
+var refreshChart = true
 // colours from  https://personal.sron.nl/~pault/
 var colours = [
   "#77AADD",

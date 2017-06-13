@@ -155,6 +155,7 @@ function updateRGB () {
 
 /* POSTS the training set to our server and adds the classification to the map layers */
 function giveTraining () {
+  refreshChart = true
   $('#spinner').show()
   $('#classify').text('4. Classifying!')
   var postData = buildPostData()
@@ -170,28 +171,95 @@ function giveTraining () {
     })
     .done(function () {
       // get the performance data.
-      $('#results').empty()
-      $('#resultsTable').empty()
       getPerformance(postData)
-      $('#histchart').empty()
-      $('#histchart2').empty()
-      $('#histchart').append(
-        $('<div>').attr('class', 'container').text('Chart loading').append(
-          $('<div>').attr('class', 'progress').append(
-            $('<div>').attr('class', 'indeterminate'))))
-
-      // get the histogram data
-      $.post('/gethistdata',
-        postData,
-        function (data) { // build the chart
-          $('#histchart').empty()
-          buildChart(data)
-        }, 'json').fail(function (err) {
-          Materialize.toast(err.statusText/* + ': ' + err.responseJSON.message*/, 10000, 'rounded') // responseJSON is undefined
-        })
     })
 }
 
+// opens the results modal and builds the area histogram 
+function moreResults() {
+  $('#histchart').empty()
+  $('#histchart').append(
+    $('<div>').attr('class', 'container').text('Chart loading').append(
+      $('<div>').attr('class', 'progress').append(
+        $('<div>').attr('class', 'indeterminate'))))
+  // open the results modal
+  $('#modal1').modal('open')
+  if(refreshChart)
+    getHistData(buildPostData())
+}
+
+// get the histogram data and then calls build chart
+function getHistData(postData) {
+  refreshChart = false
+  $.post('/gethistdata',
+    postData,
+    function (data) { // build the chart
+      $('#histchart').empty()
+      buildChart(data)
+    }, 'json').fail(function (err) {
+      Materialize.toast(err.statusText/* + ': ' + err.responseJSON.message*/, 10000, 'rounded') // responseJSON is undefined
+    }
+  )
+}
+// constructs the chart from data
+function buildChart (data) {
+  var fix = function(x) { return Math.round(x/10000) }
+
+  var chartArray = [['Class', 'Hectares', {role: 'style'}]].concat(
+    classList.map(function (x, i) {
+      return [ 
+        x.name,
+        fix(data.groups[i].classification), 
+        'color: ' + x.colour
+      ]
+    }))
+  // dont display NA area if it is less than 2 ha
+  if (fix(data.groups[classList.length].classification) > 2) {
+    chartArray.push([
+      'Not classified',
+      fix(data.groups[classList.length].classification),
+      'color: #fff'
+    ])
+  }
+
+  var chartData = new google.visualization.arrayToDataTable(chartArray)
+  var chart = new google.visualization.ColumnChart($('#histchart')[0])
+  var opts2 = {
+    title: 'Area in Hectares (Estimate)',
+    legend: { position: 'none' },
+    width: $(window).width() * 0.75,
+    height: $(window).height() * 0.8,
+    hAxis: { slantedText: true, slantedTextAngle: 90 }
+  }
+  chart.draw(chartData, opts2)
+}
+
+function runAssessment () {
+  $('#assessment_btn').addClass('disabled')
+  var training = buildPostData()
+  $.post('/getassessment',
+    training,
+    function (data){
+      $('#assessmentResults').children().remove()
+      $('#assessmentResults').append($('<table>')
+        .append($('<tr>').append(
+          $('<td>').append($('<b>').text('Area:')),
+          $('<td>').text(data.area)
+        ), $('<tr>').append(
+          $('<td>').append($('<b>').text('EOO:')),
+          $('<td>').text(data.eoo)
+        ), $('<tr>').append(
+          $('<td>').append($('<b>').text('Units:')),
+          $('<td>').text(data.units)
+        ))
+      )
+    },
+    'json'
+  ).fail(function(err) {
+    // TODO: something more informative
+    Materialize.toast('Assessment Error', 5000, 'rounded')
+  })
+}
 /** constructs the data packet that we send to our server to get the
  - classified map
  - composition histogram
@@ -267,13 +335,14 @@ function buildTrainingCSV () {
       clearAllClasses()
       // remove the class rows
       $('.classVal').remove()
-      var invalidCount = 0
-      var outsideCount = 0
+      var invalidCount = 0, outsideCount = 0
+      var changeRegion = $('#regionChangeCheckbox').prop('checked')
+      var bounds = new google.maps.LatLngBounds()
       for (var i = 1; i < lines.length; i++) { // do we want to remove the header line from the CSV?
         var line = lines[i].split(',')
         line[2] = line[2].trim()
         if (validateLine(line)) {
-          if (google.maps.geometry.poly.containsLocation(new google.maps.LatLng(line[0], line[1]), region)) {
+          if (changeRegion || google.maps.geometry.poly.containsLocation(new google.maps.LatLng(line[0], line[1]), region)) {
             var classIndex = classList.findIndex(function(e) { return e.name === line[2]})
             if (classIndex === -1) {
               addClass(line[2])
@@ -288,12 +357,25 @@ function buildTrainingCSV () {
               icon: getIcon(classList[classIndex].colour)
             })
             classList[classIndex].markers.push(marker)
+            if (changeRegion) {
+              bounds.extend(new google.maps.LatLng(parseFloat(line[0]), parseFloat(line[1])))
+            }
           } else {
-            invalidCount++
+            outsideCount++
           }
         } else {
-          outsideCount++
+          invalidCount++
         }
+      }
+      if (changeRegion) {
+        map.fitBounds(bounds)
+        var polyCoords = [
+          {lat: bounds.getNorthEast().lat() + 0.01, lng: bounds.getNorthEast().lng() + 0.01},
+          {lat: bounds.getSouthWest().lat() - 0.01, lng: bounds.getNorthEast().lng() + 0.01},
+          {lat: bounds.getSouthWest().lat() - 0.01, lng: bounds.getSouthWest().lng() - 0.01},
+          {lat: bounds.getNorthEast().lat() + 0.01, lng: bounds.getSouthWest().lng() - 0.01}
+        ]
+        addRegion(polyCoords)
       }
       if (invalidCount != 0) {
         Materialize.toast(invalidCount + ' points omitted from CSV for being invalid.', 5000, 'rounded')
@@ -323,97 +405,40 @@ function getPerformance (postData) {
   $.post('/getperformance',
     postData,
     function (data) {
-      var dataAcc = String(data.accuracy * 100).substr(0, 6) + '%'
+      $('#results').empty()
+      $('#resultsTable').empty()
+      $('#resultsList').empty()
+      $('#resultsList').append(
+        $('<a class="btn" onClick="moreResults()">More</a>'))
+
+      var toPercent = function(x) { return String(x * 100).substr(0, 6) + '%'; }
       var dataTooltip = {
         tooltip: 'Resubstitution Accuracy is a measure of how well the model performs when built on all of the training set.',
         position: 'right'
       }
-      data.producers_accuracy.shift() // remove the empty class
-      var prodArr = data.producers_accuracy.map(function (x, i) {
-        return [classList[i].name, + String(x * 100).substr(0, 6) + '%']
-      })
-      data.consumers_accuracy[0].shift()
-      var consArr = data.consumers_accuracy[0].map(function (x, i) {
-        return [classList[i].name, + String(x * 100).substr(0, 6) + '%']
-      })
       $('#results')
-      .append($('<a>').text('Resubstitution Accuracy: ' + dataAcc).tooltip(dataTooltip))
-      .append($('<a>').text('Producers Accuracy: '))
-      .append(prodArr.map(function (x) { return $('<a>').text(x.join(' ')) }))
-      .append($('<a>').text('Consumers Accuracy: '))
-      .append(consArr.map(function (x) { return $('<a>').text(x.join(' ')) }))
-
+      .append($('<a>').text('Resubstitution Accuracy: ' + toPercent(data.accuracy)).tooltip(dataTooltip))
+      
       $('#resultsTable')
-      .append($('<thead>').append($('<tr>')))
-      .append($('<tbody>'))
-      $('#resultsTable thead tr')
-      .append($('<th>').text('Accuracy'))
-      .append(prodArr.map(function (x) { return $('<th>').text(x[0]) }))
-      $('#resultsTable tbody').append($('<tr>')).append($('<tr>'))
-      $('#resultsTable tbody tr').eq(0)
-      .append($('<td>').text('Producers Accuracy'))
-      .append(prodArr.map(function (x) { return $('<td>').text(x[1]) }))
-      $('#resultsTable tbody tr').eq(1)
-      .append($('<td>').text('Consumers Accuracy'))
-      .append(consArr.map(function (x) { return $('<td>').text(x[1]) }))
-    }, 'json')
-}
-
-function runAssessment () {
-  $('#assessment_btn').addClass('disabled')
-  var training = buildPostData()
-  $.post('/getassessment',
-    training,
-    function (data){
-      $('#assessmentResults').children().remove()
-      $('#assessmentResults').append($('<table>')
-        .append($('<tr>').append(
-          $('<td>').append($('<b>').text('Area:')),
-          $('<td>').text(data.area)
-        ), $('<tr>').append(
-          $('<td>').append($('<b>').text('EOO:')),
-          $('<td>').text(data.eoo)
-        ), $('<tr>').append(
-          $('<td>').append($('<b>').text('Units:')),
-          $('<td>').text(data.units)
-        ))
+        .append($('<thead>').append($('<tr>').append([
+          $('<th>').text('Class'),
+          $('<th>').text('Consumers Accuracy'),
+          $('<th>').text('Producers Accuracy')
+        ])))
+        .append($('<tbody>').append(classList.map(
+          function(x, i) {
+            return $('<tr>').append([
+              $('<td>').text(x.name),
+              $('<td>').text(toPercent(data.consumers_accuracy[0][i + 1])),
+              $('<td>').text(toPercent(data.producers_accuracy[i + 1][0]))
+            ])
+          }
+        )).append($('<tr>').append([
+          $('<td>').append($('<b>').text('Resubstitution Accuracy')),
+          $('<td>').append($('<b>').text(toPercent(data.accuracy)))
+        ]))
       )
-    },
-    'json'
-  ).fail(function(err) {
-    // TODO: something more informative
-    Materialize.toast('Assessment Error', 5000, 'rounded')
-  })
-}
-
-// constructs the chart from data
-function buildChart (data) {
-  var data2 = new google.visualization.arrayToDataTable(
-  [['Class', 'Hectares', {role: 'style'}]].concat(
-    classList.map(function (x, i) {
-      return [x.name, data.classification[String(i + 1)], 'color: ' + x.colour]
-    })
-  ))
-  var chart = new google.visualization.ColumnChart($('#histchart')[0])
-  var opts = {
-    title: 'Area in Hectares',
-    legend: { position: 'none' },
-    width: 300,
-    hAxis: { slantedText: true, slantedTextAngle: 90 }
-  }
-  chart.draw(data2, opts)
-  var chart2 = new google.visualization.ColumnChart($('#histchart2')[0])
-  var opts2 = {
-    title: 'Area in Hectares',
-    legend: { position: 'none' },
-    width: $(window).width() * 0.75,
-    height: $(window).height() * 0.8,
-    hAxis: { slantedText: true, slantedTextAngle: 90 }
-  }
-  chart2.draw(data2, opts2)
-  $('#histchart').on('click', function () {
-    $('#modal1').modal('open')
-  })
+    }, 'json')
 }
 
 function doDownload(fileName, blob) {
@@ -606,10 +631,12 @@ function loadFromJSON (data) {
  Init functions
 */
 
-var listenerHandle = false
+// list to store classes
 var classList = []
+var listenerHandle = false
 var classified = false
 var region = false
+var refreshChart = true
 // colours from  https://personal.sron.nl/~pault/
 var colours = [
   "#77AADD",

@@ -8,6 +8,7 @@ from google.appengine.ext import ndb
 from webapp2_extras import sessions
 import webapp2, jinja2
 import ee, oauth2client, httplib2
+from datetime import datetime, timedelta
 
 jinja_environment = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
@@ -47,6 +48,18 @@ def kmlify(rgn):
 		rgnString += str(r['lng']) + ',' + str(r['lat']) + ',0'
 	return '<Polygon><outerBoundaryIs><LinearRing><coordinates>' + rgnString + '</coordinates></LinearRing></outerBoundaryIs></Polygon>'
 
+# never gets called but should be run occasionally to clear out exported files that errored before deletion
+def clearOldExports():
+	files = APP_DRIVE_HELPER.GetExportedFiles('')
+	print(len(files))
+	now = datetime.utcnow()
+	for f in files:
+		cDate = datetime.strptime(f['createdDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
+		print(now - cDate)
+		if now - cDate > timedelta(days=7):
+			APP_DRIVE_HELPER.DeleteFile(f['id'])
+	print(len(files))
+
 def datastore(ip, nPts, nCls, isDrv, rgn):
 	q = Query(ipAddress=ip, nPoints=nPts, nClasses=nCls, isDrive=isDrv, region=kmlify(rgn))
 	q.put()
@@ -54,6 +67,11 @@ def datastore(ip, nPts, nCls, isDrv, rgn):
 class BaseHandler(webapp2.RequestHandler):
 	def dispatch(self):
 		self.session_store = sessions.get_store(request=self.request)
+		if 'credentials' in self.session:
+			credentials = oauth2client.client.OAuth2Credentials.from_json(self.session['credentials'])
+			if credentials.access_token_expired:
+				credentials.refresh(httplib2.Http())
+				self.session['credentials'] = credentials.to_json()
 		try:
 			webapp2.RequestHandler.dispatch(self)
 		finally:
@@ -65,10 +83,6 @@ class BaseHandler(webapp2.RequestHandler):
 
 class MainPage(BaseHandler):
 	def get(self):
-		if 'credentials' in self.session:
-			credentials = oauth2client.client.OAuth2Credentials.from_json(self.session['credentials'])
-			if credentials.access_token_expired:
-				self.session.pop('credentials', None)
 		template = jinja_environment.get_template('templates/index.html')
 		oauthResponse = 'true' if 'credentials' in self.session else ('reload' if 'reload' in self.session else 'false')
 		self.session.pop('reload', None)
@@ -315,12 +329,16 @@ class GetHistData(GetMapData):
 		train_fc = self.get_train(classes)
 		region_fc = self.get_region(data)
 		classified = remap.get_classified_from_fc(train_fc, predictors).clip(region_fc)
-		hist_data = classified.reduceRegion(
-			ee.Reducer.frequencyHistogram(),
-			region_fc, 
+
+		# TODO AREA ESTIMATES
+		hist_data = classified.addBands(ee.Image.pixelArea()).reduceRegion(
+			reducer=ee.Reducer.sum().unweighted().forEachBand(classified).group(
+				groupField=0,
+				groupName="class"),
+			geometry=region_fc, 
 			# enable , if getting errors about maximum number of pixels
 			scale=remap.parameters['histogram_scale'],
-			bestEffort=remap.parameters['best_effort']).getInfo()
+			maxPixels=5000000000).getInfo()
 		self.response.write(json.dumps(hist_data))
 
 class Logout(BaseHandler):
@@ -333,6 +351,12 @@ class Logout(BaseHandler):
 class Export(BaseHandler):
 	"""Allows for the exporting of a classified region as a geotiff to a users 
 		Google Drive.
+	"""
+
+	"""GAE will throw a DeadlineExceededError on the frontend if queries take longer than 60 seconds
+		So in POST we fire off a background task that will do the export and return immediately (<1 second)
+		GET gets polled every x seconds by the front end while waiting for the export task to complete
+		TODO: consider other implementations using Firebase Realtime Database, socket.io or similar
 	"""
 	def get(self):
 		self.response.write(exportProgress)

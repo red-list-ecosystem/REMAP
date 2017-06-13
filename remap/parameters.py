@@ -1,5 +1,5 @@
 """
-	Pipe specific parameters, relating to classification and visualisation.
+	REMAP specific parameters, relating to classification and visualisation.
 """
 
 parameters = {
@@ -15,7 +15,6 @@ parameters = {
 	'oob_mode':True,
 	'number_of_trees': 100,
 	'min_leaf_pop': 13,
-	'histogram_scale': 100,
-	'best_effort': True,
+	'histogram_scale': 30,
 	'pred_vis_points': 100
 }

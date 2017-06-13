@@ -36,7 +36,9 @@
         <ul id="slide-out" class="side-nav fixed">
           <!-- logo header etc -->
           <li>
-            <img class="logo" src="/static/images/Logo-01.png">
+            <a class="logo-link" href="/about">
+              <img class="logo" src="/static/images/Logv2oColour2-01.png">
+            </a>
           </li>
           <!-- search box -->
           <li style="margin-bottom: 5px">
@@ -157,11 +159,8 @@
               <li>
                 <a class="collapsible-header"><i class="material-icons">assessment</i>5. Results</a>
                 <div class="collapsible-body">
-                  <ul>
-                    <li id="results"><a>No results yet.</a></li>
-                    <li><a>Click on the chart to expand.</a></li>
-                    <li id="histchart"></li>
-                  </ul> 
+                  <ul><li id="results"><a>No results yet.</a></li></ul>
+                  <ul id="resultsList"></ul>
                 </div>
               </li>
             </ul>
@@ -173,7 +172,6 @@
                 <a class="collapsible-header"><i class="material-icons">show_chart</i>6. Assessment</a>
                 <div class="collapsible-body">
                   <ul>
-                    <li><a class="tooltippedr" data-delay="50" data-position="right" data-tooltip="The Assessment step performs analysis on a specific class of interest.">Info</a></li>
                     <div class="container">
                       <label>Class of interest</label>
                       <select id="assessment_select">
@@ -181,6 +179,7 @@
                       <a id="assessment_btn" class="btn" onClick="runAssessment()"> Run Assessment</a>
                       <div id="assessmentResults"></div>
                     </div>
+                    <li><a class="tooltipped" data-delay="50" data-position="right" data-tooltip="The Assessment step performs analysis on a specific class of interest.">Help</a></li>
                   </ul> 
                 </div>
               </li>
@@ -244,12 +243,20 @@
         </div>
       </div>
     </div>
+    <!-- RESULTS MODAL -->
     <div id="modal1" class="modal">
-      <div class="inset">
-        <table id="resultsTable" class="striped centered"></table>
+      <div class="modal-content">
+        <div class="header">
+          <h4>Results</h4>
+        </div>
+        <div class="divider"></div>
+        <div class="container">
+          <table id="resultsTable" class="centered striped"></table>
+        </div>
+        <p id="histchart"></p>
       </div>
-      <p id="histchart2"></p>
     </div>
+    <!-- Class  modal -->
     <div class="modal" id="modal2" value="0">
       <div class="input-field">
         <input id="cname" type="text">
@@ -282,6 +289,7 @@
         <p>This app is best viewed on a larger screen.</p>
       </div>
     </div>
+    <!--  UPLOAD MODAL -->
     <div class="modal" id="modal3">
       <div class="modal-content">
         <h4>Upload Data</h4>
@@ -317,6 +325,12 @@
           </div>
           <div class="col s4">
             <a class="waves-effect waves-light btn" onclick="uploadKMLClick()">Upload KML<input id="kml" type="file" accept=".kml" tabindex="-1"></a>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col s12">
+            <input type="checkbox" id="regionChangeCheckbox" />
+            <label for="regionChangeCheckbox">Change region to fit points</label>
           </div>
         </div>
       </div>
