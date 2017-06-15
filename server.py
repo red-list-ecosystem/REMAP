@@ -28,8 +28,9 @@ wsgiConfig['webapp2_extras.sessions'] = {
 	'secret_key': config.WSGI_KEY
 }
 
-classifyProgress = 'NOT_STARTED'
-exportProgress = 'NOT_STARTED'
+class Progress(ndb.Model):
+	emailAddress = ndb.StringProperty()
+	exportProgress = ndb.StringProperty()
 
 class Query(ndb.Model):
 	ipAddress = ndb.StringProperty()
@@ -60,9 +61,25 @@ def clearOldExports():
 			APP_DRIVE_HELPER.DeleteFile(f['id'])
 	print(len(files))
 
+def checkDatastoreProgress(email):
+	query = Progress.query(Progress.emailAddress == email).fetch()
+	if len(query) > 0:
+		return query[0].exportProgress
+	else:
+		return 'NOT_STARTED'
+
 def datastore(ip, nPts, nCls, isDrv, rgn):
 	q = Query(ipAddress=ip, nPoints=nPts, nClasses=nCls, isDrive=isDrv, region=kmlify(rgn))
 	q.put()
+
+def datastoreProgress(email, progress):
+	query = Progress.query(Progress.emailAddress == email).fetch()
+	if len(query) > 0:
+		p = query[0]
+		p.exportProgress = progress
+	else:
+		p = Progress(emailAddress=email, exportProgress=progress)
+	p.put()
 
 class BaseHandler(webapp2.RequestHandler):
 	def dispatch(self):
@@ -359,11 +376,10 @@ class Export(BaseHandler):
 		TODO: consider other implementations using Firebase Realtime Database, socket.io or similar
 	"""
 	def get(self):
-		self.response.write(exportProgress)
+		self.response.write(checkDatastoreProgress(self.session['email']))
 
 	def post(self):
-		global exportProgress
-		exportProgress = 'IN_PROGRESS'
+		datastoreProgress(self.session['email'], 'IN_PROGRESS')
 		taskqueue.add(
 			url = '/exportworker',
 			params = {
@@ -376,7 +392,6 @@ class Export(BaseHandler):
 
 class ExportWorker(GetMapData):
 	def post(self):
-		global exportProgress
 		self.layers = []
 		self.response.headers['Content-Type'] = 'application/json'
 
@@ -438,10 +453,10 @@ class ExportWorker(GetMapData):
 			for f in files:
 				APP_DRIVE_HELPER.DeleteFile(f['id'])
 			# writing a response is necessary so the Javascript doesnt error (yes, even on 200 OK responses)
-			exportProgress = 'COMPLETED'
+			datastoreProgress(self.request.get('email'), 'COMPLETED')
 			print('Done!')
 		else:
-			exportProgress = 'ERROR'
+			datastoreProgress(self.request.get('email'), 'ERROR')
 			print('Error')
 
 def handle_error(request, response, exception):
