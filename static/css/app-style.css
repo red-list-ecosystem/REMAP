@@ -195,6 +195,9 @@ body {
 .search-wrapper.card input {
   margin-bottom: 0;
 }
+.side-nav {
+  height: 100%;
+}
 .side-nav li a i.material-icons.right {
   display: none;
   margin-right: 0px;

@@ -17,12 +17,18 @@
 All exceptions defined by the library
 should be defined in this file.
 """
+from __future__ import absolute_import
 
 __author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
 import json
 
-from oauth2client import util
+# Oauth2client < 3 has the positional helper in 'util', >= 3 has it
+# in '_helpers'.
+try:
+  from oauth2client import util
+except ImportError:
+  from oauth2client import _helpers as util
 
 
 class Error(Exception):
@@ -36,6 +42,8 @@ class HttpError(Error):
   @util.positional(3)
   def __init__(self, resp, content, uri=None):
     self.resp = resp
+    if not isinstance(content, bytes):
+        raise TypeError("HTTP content should be bytes")
     self.content = content
     self.uri = uri
 
@@ -43,9 +51,13 @@ class HttpError(Error):
     """Calculate the reason for the error from the response content."""
     reason = self.resp.reason
     try:
-      data = json.loads(self.content)
-      reason = data['error']['message']
-    except (ValueError, KeyError):
+      data = json.loads(self.content.decode('utf-8'))
+      if isinstance(data, dict):
+        reason = data['error']['message']
+      elif isinstance(data, list) and len(data) > 0:
+        first_error = data[0]
+        reason = first_error['error']['message']
+    except (ValueError, KeyError, TypeError):
       pass
     if reason is None:
       reason = ''
@@ -114,6 +126,9 @@ class BatchError(HttpError):
     self.reason = reason
 
   def __repr__(self):
+    if getattr(self.resp, 'status', None) is None:
+      return '<BatchError "%s">' % (self.reason)
+    else:
       return '<BatchError %s "%s">' % (self.resp.status, self.reason)
 
   __str__ = __repr__

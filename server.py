@@ -414,7 +414,8 @@ class ExportWorker(GetMapData):
 		datastore(self.request.get('ip'), sum([ len( label['points'] ) for label in classes ]), len(classes), True, json.dumps(data['region']))
 		classified = remap.get_classified_from_fc(train_fc, predictors).clip(region_fc)
 		temp_file_prefix = str(uuid.uuid4())
-		file_name = 'REMAP GeoTIFF Export ' + time.ctime() + '.tif'
+		export_time = time.ctime()
+		file_name = 'REMAP GeoTIFF Export ' + export_time + '.tif'
 
 		task = ee.batch.Export.image(
 			image=classified,
@@ -442,17 +443,16 @@ class ExportWorker(GetMapData):
 			for f in files:
 				APP_DRIVE_HELPER.GrantAccess(f['id'], self.request.get('email'))
 			user_drive_helper = drive.DriveHelper(credentials)
-			# TODO why are these two cases needed shouldnt the else cover the first case
-			# TODO upload the metadata file.
-			if len(files) == 1:
-				file_id = files[0]['id']
-				copied_file_id = user_drive_helper.CopyFile(file_id, file_name)
-			else:
+			if len(files) > 0:
+				folder = user_drive_helper.CreateFolder('REMAP Export Folder ' + export_time)
+				user_drive_helper.CreateFile('REMAP metadata ' + export_time + '.csv', meta_file, folder)
 				for f in files:
-					user_drive_helper.CopyFile(f['id'], file_name)
-			for f in files:
+					try: 	# will fail if the user doesn't have the right permissions
+								# just ignore it since it might have accidentally found someone else's file
+						user_drive_helper.CopyFile(f['id'], file_name, folder)
+					except:
+						pass
 				APP_DRIVE_HELPER.DeleteFile(f['id'])
-			# writing a response is necessary so the Javascript doesnt error (yes, even on 200 OK responses)
 			datastoreProgress(self.request.get('email'), 'COMPLETED')
 			print('Done!')
 		else:

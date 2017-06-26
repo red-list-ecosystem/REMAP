@@ -55,12 +55,20 @@ Example of unsubscribing.
 
   service.channels().stop(channel.body())
 """
+from __future__ import absolute_import
 
 import datetime
 import uuid
 
 from googleapiclient import errors
-from oauth2client import util
+import six
+
+# Oauth2client < 3 has the positional helper in 'util', >= 3 has it
+# in '_helpers'.
+try:
+  from oauth2client import util
+except ImportError:
+  from oauth2client import _helpers as util
 
 
 # The unix time epoch starts at midnight 1970.
@@ -88,7 +96,7 @@ X_GOOG_RESOURCE_ID    = 'X-GOOG-RESOURCE-ID'
 
 def _upper_header_keys(headers):
   new_headers = {}
-  for k, v in headers.iteritems():
+  for k, v in six.iteritems(headers):
     new_headers[k.upper()] = v
   return new_headers
 
@@ -218,7 +226,7 @@ class Channel(object):
     Args:
       resp: dict, The response from a watch() method.
     """
-    for json_name, param_name in CHANNEL_PARAMS.iteritems():
+    for json_name, param_name in six.iteritems(CHANNEL_PARAMS):
       value = resp.get(json_name)
       if value is not None:
         setattr(self, param_name, value)

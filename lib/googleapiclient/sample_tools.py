@@ -16,16 +16,17 @@
 
 Consolidates a lot of code commonly repeated in sample applications.
 """
+from __future__ import absolute_import
 
 __author__ = 'jcgregorio@google.com (Joe Gregorio)'
 __all__ = ['init']
 
 
 import argparse
-import httplib2
 import os
 
 from googleapiclient import discovery
+from googleapiclient.http import build_http
 from oauth2client import client
 from oauth2client import file
 from oauth2client import tools
@@ -87,16 +88,16 @@ def init(argv, name, version, doc, filename, scope=None, parents=[], discovery_f
   credentials = storage.get()
   if credentials is None or credentials.invalid:
     credentials = tools.run_flow(flow, storage, flags)
-  http = credentials.authorize(http = httplib2.Http())
+  http = credentials.authorize(http=build_http())
 
   if discovery_filename is None:
     # Construct a service object via the discovery service.
     service = discovery.build(name, version, http=http)
   else:
     # Construct a service object using a local discovery document file.
-	with open(discovery_filename) as discovery_file:
-	  service = discovery.build_from_document(
-		  discovery_file.read(),
-		  base='https://www.googleapis.com/',
-		  http=http)
+    with open(discovery_filename) as discovery_file:
+      service = discovery.build_from_document(
+          discovery_file.read(),
+          base='https://www.googleapis.com/',
+          http=http)
   return (service, flags)

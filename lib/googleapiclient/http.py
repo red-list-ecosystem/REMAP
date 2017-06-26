@@ -18,43 +18,168 @@ The classes implement a command pattern, with every
 object supporting an execute() method that does the
 actuall HTTP request.
 """
+from __future__ import absolute_import
+import six
+from six.moves import http_client
+from six.moves import range
 
 __author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
-import StringIO
+from six import BytesIO, StringIO
+from six.moves.urllib.parse import urlparse, urlunparse, quote, unquote
+
 import base64
 import copy
 import gzip
 import httplib2
 import json
 import logging
-import mimeparse
 import mimetypes
 import os
 import random
+import socket
 import sys
 import time
-import urllib
-import urlparse
 import uuid
+
+# TODO(issue 221): Remove this conditional import jibbajabba.
+try:
+  import ssl
+except ImportError:
+  _ssl_SSLError = object()
+else:
+  _ssl_SSLError = ssl.SSLError
 
 from email.generator import Generator
 from email.mime.multipart import MIMEMultipart
 from email.mime.nonmultipart import MIMENonMultipart
 from email.parser import FeedParser
-from errors import BatchError
-from errors import HttpError
-from errors import InvalidChunkSizeError
-from errors import ResumableUploadError
-from errors import UnexpectedBodyError
-from errors import UnexpectedMethodError
-from model import JsonModel
-from oauth2client import util
 
+# Oauth2client < 3 has the positional helper in 'util', >= 3 has it
+# in '_helpers'.
+try:
+  from oauth2client import util
+except ImportError:
+  from oauth2client import _helpers as util
+
+from googleapiclient import mimeparse
+from googleapiclient.errors import BatchError
+from googleapiclient.errors import HttpError
+from googleapiclient.errors import InvalidChunkSizeError
+from googleapiclient.errors import ResumableUploadError
+from googleapiclient.errors import UnexpectedBodyError
+from googleapiclient.errors import UnexpectedMethodError
+from googleapiclient.model import JsonModel
+
+
+LOGGER = logging.getLogger(__name__)
 
 DEFAULT_CHUNK_SIZE = 512*1024
 
 MAX_URI_LENGTH = 2048
+
+_TOO_MANY_REQUESTS = 429
+
+DEFAULT_HTTP_TIMEOUT_SEC = 60
+
+
+def _should_retry_response(resp_status, content):
+  """Determines whether a response should be retried.
+
+  Args:
+    resp_status: The response status received.
+    content: The response content body. 
+
+  Returns:
+    True if the response should be retried, otherwise False.
+  """
+  # Retry on 5xx errors.
+  if resp_status >= 500:
+    return True
+
+  # Retry on 429 errors.
+  if resp_status == _TOO_MANY_REQUESTS:
+    return True
+
+  # For 403 errors, we have to check for the `reason` in the response to
+  # determine if we should retry.
+  if resp_status == six.moves.http_client.FORBIDDEN:
+    # If there's no details about the 403 type, don't retry.
+    if not content:
+      return False
+
+    # Content is in JSON format.
+    try:
+      data = json.loads(content.decode('utf-8'))
+      reason = data['error']['errors'][0]['reason']
+    except (UnicodeDecodeError, ValueError, KeyError):
+      LOGGER.warning('Invalid JSON content from response: %s', content)
+      return False
+
+    LOGGER.warning('Encountered 403 Forbidden with reason "%s"', reason)
+
+    # Only retry on rate limit related failures.
+    if reason in ('userRateLimitExceeded', 'rateLimitExceeded', ):
+      return True
+
+  # Everything else is a success or non-retriable so break.
+  return False
+
+
+def _retry_request(http, num_retries, req_type, sleep, rand, uri, method, *args,
+                   **kwargs):
+  """Retries an HTTP request multiple times while handling errors.
+
+  If after all retries the request still fails, last error is either returned as
+  return value (for HTTP 5xx errors) or thrown (for ssl.SSLError).
+
+  Args:
+    http: Http object to be used to execute request.
+    num_retries: Maximum number of retries.
+    req_type: Type of the request (used for logging retries).
+    sleep, rand: Functions to sleep for random time between retries.
+    uri: URI to be requested.
+    method: HTTP method to be used.
+    args, kwargs: Additional arguments passed to http.request.
+
+  Returns:
+    resp, content - Response from the http request (may be HTTP 5xx).
+  """
+  resp = None
+  content = None
+  for retry_num in range(num_retries + 1):
+    if retry_num > 0:
+      # Sleep before retrying.
+      sleep_time = rand() * 2 ** retry_num
+      LOGGER.warning(
+          'Sleeping %.2f seconds before retry %d of %d for %s: %s %s, after %s',
+          sleep_time, retry_num, num_retries, req_type, method, uri,
+          resp.status if resp else exception)
+      sleep(sleep_time)
+
+    try:
+      exception = None
+      resp, content = http.request(uri, method, *args, **kwargs)
+    # Retry on SSL errors and socket timeout errors.
+    except _ssl_SSLError as ssl_error:
+      exception = ssl_error
+    except socket.error as socket_error:
+      # errno's contents differ by platform, so we have to match by name.
+      if socket.errno.errorcode.get(socket_error.errno) not in (
+          'WSAETIMEDOUT', 'ETIMEDOUT', 'EPIPE', 'ECONNABORTED', ):
+        raise
+      exception = socket_error
+
+    if exception:
+      if retry_num == num_retries:
+        raise exception
+      else:
+        continue
+
+    if not _should_retry_response(resp.status, content):
+      break
+
+  return resp, content
 
 
 class MediaUploadProgress(object):
@@ -259,7 +384,7 @@ class MediaIoBaseUpload(MediaUpload):
   Note that the Python file object is compatible with io.Base and can be used
   with this class also.
 
-    fh = io.BytesIO('...Some data to upload...')
+    fh = BytesIO('...Some data to upload...')
     media = MediaIoBaseUpload(fh, mimetype='image/png',
       chunksize=1024*1024, resumable=True)
     farm.animals().insert(
@@ -421,7 +546,11 @@ class MediaFileUpload(MediaIoBaseUpload):
     self._filename = filename
     fd = open(self._filename, 'rb')
     if mimetype is None:
-      (mimetype, encoding) = mimetypes.guess_type(filename)
+      # No mimetype provided, make a guess.
+      mimetype, _ = mimetypes.guess_type(filename)
+      if mimetype is None:
+        # Guess failed, use octet-stream.
+        mimetype = 'application/octet-stream'
     super(MediaFileUpload, self).__init__(fd, mimetype, chunksize=chunksize,
                                           resumable=resumable)
 
@@ -465,7 +594,7 @@ class MediaInMemoryUpload(MediaIoBaseUpload):
     resumable: bool, True if this is a resumable upload. False means upload
       in a single request.
     """
-    fd = StringIO.StringIO(body)
+    fd = BytesIO(body)
     super(MediaInMemoryUpload, self).__init__(fd, mimetype, chunksize=chunksize,
                                               resumable=resumable)
 
@@ -518,7 +647,7 @@ class MediaIoBaseDownload(object):
     """Get the next chunk of the download.
 
     Args:
-      num_retries: Integer, number of times to retry 500's with randomized
+      num_retries: Integer, number of times to retry with randomized
             exponential backoff. If all retries fail, the raised HttpError
             represents the last request. If zero (default), we attempt the
             request only once.
@@ -538,16 +667,9 @@ class MediaIoBaseDownload(object):
         }
     http = self._request.http
 
-    for retry_num in xrange(num_retries + 1):
-      if retry_num > 0:
-        self._sleep(self._rand() * 2**retry_num)
-        logging.warning(
-            'Retry #%d for media download: GET %s, following status: %d'
-            % (retry_num, self._uri, resp.status))
-
-      resp, content = http.request(self._uri, headers=headers)
-      if resp.status < 500:
-        break
+    resp, content = _retry_request(
+        http, num_retries, 'media download', self._sleep, self._rand, self._uri,
+        'GET', headers=headers)
 
     if resp.status in [200, 206]:
       if 'content-location' in resp and resp['content-location'] != self._uri:
@@ -646,7 +768,7 @@ class HttpRequest(object):
 
     # Pull the multipart boundary out of the content-type header.
     major, minor, params = mimeparse.parse_mime_type(
-        headers.get('content-type', 'application/json'))
+        self.headers.get('content-type', 'application/json'))
 
     # The size of the non-media part of the request.
     self.body_size = len(self.body or '')
@@ -668,7 +790,7 @@ class HttpRequest(object):
     Args:
       http: httplib2.Http, an http object to be used in place of the
             one the HttpRequest request object was constructed with.
-      num_retries: Integer, number of times to retry 500's with randomized
+      num_retries: Integer, number of times to retry with randomized
             exponential backoff. If all retries fail, the raised HttpError
             represents the last request. If zero (default), we attempt the
             request only once.
@@ -699,8 +821,8 @@ class HttpRequest(object):
       self.method = 'POST'
       self.headers['x-http-method-override'] = 'GET'
       self.headers['content-type'] = 'application/x-www-form-urlencoded'
-      parsed = urlparse.urlparse(self.uri)
-      self.uri = urlparse.urlunparse(
+      parsed = urlparse(self.uri)
+      self.uri = urlunparse(
           (parsed.scheme, parsed.netloc, parsed.path, parsed.params, None,
            None)
           )
@@ -708,16 +830,9 @@ class HttpRequest(object):
       self.headers['content-length'] = str(len(self.body))
 
     # Handle retries for server-side errors.
-    for retry_num in xrange(num_retries + 1):
-      if retry_num > 0:
-        self._sleep(self._rand() * 2**retry_num)
-        logging.warning('Retry #%d for request: %s %s, following status: %d'
-                        % (retry_num, self.method, self.uri, resp.status))
-
-      resp, content = http.request(str(self.uri), method=str(self.method),
-                                   body=self.body, headers=self.headers)
-      if resp.status < 500:
-        break
+    resp, content = _retry_request(
+          http, num_retries, 'request', self._sleep, self._rand, str(self.uri),
+          method=str(self.method), body=self.body, headers=self.headers)
 
     for callback in self.response_callbacks:
       callback(resp)
@@ -763,7 +878,7 @@ class HttpRequest(object):
     Args:
       http: httplib2.Http, an http object to be used in place of the
             one the HttpRequest request object was constructed with.
-      num_retries: Integer, number of times to retry 500's with randomized
+      num_retries: Integer, number of times to retry with randomized
             exponential backoff. If all retries fail, the raised HttpError
             represents the last request. If zero (default), we attempt the
             request only once.
@@ -791,18 +906,9 @@ class HttpRequest(object):
         start_headers['X-Upload-Content-Length'] = size
       start_headers['content-length'] = str(self.body_size)
 
-      for retry_num in xrange(num_retries + 1):
-        if retry_num > 0:
-          self._sleep(self._rand() * 2**retry_num)
-          logging.warning(
-              'Retry #%d for resumable URI request: %s %s, following status: %d'
-              % (retry_num, self.method, self.uri, resp.status))
-
-        resp, content = http.request(self.uri, method=self.method,
-                                     body=self.body,
-                                     headers=start_headers)
-        if resp.status < 500:
-          break
+      resp, content = _retry_request(
+          http, num_retries, 'resumable URI request', self._sleep, self._rand,
+          self.uri, method=self.method, body=self.body, headers=start_headers)
 
       if resp.status == 200 and 'location' in resp:
         self.resumable_uri = resp['location']
@@ -823,10 +929,7 @@ class HttpRequest(object):
         # The upload was complete.
         return (status, body)
 
-    # The httplib.request method can take streams for the body parameter, but
-    # only in Python 2.6 or later. If a stream is available under those
-    # conditions then use it as the body argument.
-    if self.resumable.has_stream() and sys.version_info[1] >= 6:
+    if self.resumable.has_stream():
       data = self.resumable.stream()
       if self.resumable.chunksize() == -1:
         data.seek(self.resumable_progress)
@@ -856,10 +959,10 @@ class HttpRequest(object):
         'Content-Length': str(chunk_end - self.resumable_progress + 1)
         }
 
-    for retry_num in xrange(num_retries + 1):
+    for retry_num in range(num_retries + 1):
       if retry_num > 0:
         self._sleep(self._rand() * 2**retry_num)
-        logging.warning(
+        LOGGER.warning(
             'Retry #%d for media upload: %s %s, following status: %d'
             % (retry_num, self.method, self.uri, resp.status))
 
@@ -870,7 +973,7 @@ class HttpRequest(object):
       except:
         self._in_error_state = True
         raise
-      if resp.status < 500:
+      if not _should_retry_response(resp.status, content):
         break
 
     return self._process_response(resp, content)
@@ -895,7 +998,11 @@ class HttpRequest(object):
     elif resp.status == 308:
       self._in_error_state = False
       # A "308 Resume Incomplete" indicates we are not done.
-      self.resumable_progress = int(resp['range'].split('-')[1]) + 1
+      try:
+        self.resumable_progress = int(resp['range'].split('-')[1]) + 1
+      except KeyError:
+        # If resp doesn't contain range header, resumable progress is 0
+        self.resumable_progress = 0
       if 'location' in resp:
         self.resumable_uri = resp['location']
     else:
@@ -1048,7 +1155,7 @@ class BatchHttpRequest(object):
     if self._base_id is None:
       self._base_id = uuid.uuid4()
 
-    return '<%s+%s>' % (self._base_id, urllib.quote(id_))
+    return '<%s+%s>' % (self._base_id, quote(id_))
 
   def _header_to_id(self, header):
     """Convert a Content-ID header value to an id.
@@ -1071,7 +1178,7 @@ class BatchHttpRequest(object):
       raise BatchError("Invalid value for Content-ID: %s" % header)
     base, id_ = header[1:-1].rsplit('+', 1)
 
-    return urllib.unquote(id_)
+    return unquote(id_)
 
   def _serialize_request(self, request):
     """Convert an HttpRequest object into a string.
@@ -1083,9 +1190,9 @@ class BatchHttpRequest(object):
       The request as a string in application/http format.
     """
     # Construct status line
-    parsed = urlparse.urlparse(request.uri)
-    request_line = urlparse.urlunparse(
-        (None, None, parsed.path, parsed.params, parsed.query, None)
+    parsed = urlparse(request.uri)
+    request_line = urlunparse(
+        ('', '', parsed.path, parsed.params, parsed.query, '')
         )
     status_line = request.method + ' ' + request_line + ' HTTP/1.1\n'
     major, minor = request.headers.get('content-type', 'application/json').split('/')
@@ -1100,7 +1207,7 @@ class BatchHttpRequest(object):
     if 'content-type' in headers:
       del headers['content-type']
 
-    for key, value in headers.iteritems():
+    for key, value in six.iteritems(headers):
       msg[key] = value
     msg['Host'] = parsed.netloc
     msg.set_unixfrom(None)
@@ -1110,17 +1217,13 @@ class BatchHttpRequest(object):
       msg['content-length'] = str(len(request.body))
 
     # Serialize the mime message.
-    fp = StringIO.StringIO()
+    fp = StringIO()
     # maxheaderlen=0 means don't line wrap headers.
     g = Generator(fp, maxheaderlen=0)
     g.flatten(msg, unixfrom=False)
     body = fp.getvalue()
 
-    # Strip off the \n\n that the MIME lib tacks onto the end of the payload.
-    if request.body is None:
-      body = body[:-2]
-
-    return status_line.encode('utf-8') + body
+    return status_line + body
 
   def _deserialize_response(self, payload):
     """Convert string into httplib2 response and content.
@@ -1233,7 +1336,7 @@ class BatchHttpRequest(object):
 
     # encode the body: note that we can't use `as_string`, because
     # it plays games with `From ` lines.
-    fp = StringIO.StringIO()
+    fp = StringIO()
     g = Generator(fp, mangle_from_=False)
     g.flatten(message, unixfrom=False)
     body = fp.getvalue()
@@ -1248,11 +1351,12 @@ class BatchHttpRequest(object):
     if resp.status >= 300:
       raise HttpError(resp, content, uri=self._batch_uri)
 
-    # Now break out the individual responses and store each one.
-    boundary, _ = content.split(None, 1)
-
     # Prepend with a content-type header so FeedParser can handle it.
     header = 'content-type: %s\r\n\r\n' % resp['content-type']
+    # PY3's FeedParser only accepts unicode. So we should decode content
+    # here, and encode each payload again.
+    if six.PY3:
+      content = content.decode('utf-8')
     for_parser = header + content
 
     parser = FeedParser()
@@ -1266,6 +1370,9 @@ class BatchHttpRequest(object):
     for part in mime_response.get_payload():
       request_id = self._header_to_id(part['Content-ID'])
       response, content = self._deserialize_response(part.get_payload())
+      # We encode content here to emulate normal http response.
+      if isinstance(content, six.text_type):
+        content = content.encode('utf-8')
       self._responses[request_id] = (response, content)
 
   @util.positional(1)
@@ -1284,6 +1391,9 @@ class BatchHttpRequest(object):
       httplib2.HttpLib2Error if a transport error has occured.
       googleapiclient.errors.BatchError if the response is the wrong format.
     """
+    # If we have no requests return
+    if len(self._order) == 0:
+      return None
 
     # If http is not supplied use the first valid one given in the requests.
     if http is None:
@@ -1295,6 +1405,14 @@ class BatchHttpRequest(object):
 
     if http is None:
       raise ValueError("Missing a valid http object.")
+
+    # Special case for OAuth2Credentials-style objects which have not yet been
+    # refreshed with an initial access_token.
+    if getattr(http.request, 'credentials', None) is not None:
+      creds = http.request.credentials
+      if not getattr(creds, 'access_token', None):
+        LOGGER.info('Attempting refresh to obtain initial access_token')
+        creds.refresh(http)
 
     self._execute(http, self._order, self._requests)
 
@@ -1330,7 +1448,7 @@ class BatchHttpRequest(object):
         if resp.status >= 300:
           raise HttpError(resp, content, uri=request.uri)
         response = request.postproc(resp, content)
-      except HttpError, e:
+      except HttpError as e:
         exception = e
 
       if callback is not None:
@@ -1454,9 +1572,9 @@ class HttpMock(object):
       headers: dict, header to return with response
     """
     if headers is None:
-      headers = {'status': '200 OK'}
+      headers = {'status': '200'}
     if filename:
-      f = file(filename, 'r')
+      f = open(filename, 'rb')
       self.data = f.read()
       f.close()
     else:
@@ -1532,6 +1650,8 @@ class HttpMockSequence(object):
         content = body
     elif content == 'echo_request_uri':
       content = uri
+    if isinstance(content, six.text_type):
+      content = content.encode('utf-8')
     return httplib2.Response(resp), content
 
 
@@ -1604,7 +1724,7 @@ def tunnel_patch(http):
       headers = {}
     if method == 'PATCH':
       if 'oauth_token' in headers.get('authorization', ''):
-        logging.warning(
+        LOGGER.warning(
             'OAuth 1.0 request made with Credentials after tunnel_patch.')
       headers['x-http-method-override'] = "PATCH"
       method = 'POST'
@@ -1614,3 +1734,21 @@ def tunnel_patch(http):
 
   http.request = new_request
   return http
+
+
+def build_http():
+  """Builds httplib2.Http object
+
+  Returns:
+  A httplib2.Http object, which is used to make http requests, and which has timeout set by default.
+  To override default timeout call
+
+    socket.setdefaulttimeout(timeout_in_sec)
+
+  before interacting with this method.
+  """
+  if socket.getdefaulttimeout() is not None:
+    http_timeout = socket.getdefaulttimeout()
+  else:
+    http_timeout = DEFAULT_HTTP_TIMEOUT_SEC
+  return httplib2.Http(timeout=http_timeout)

@@ -56,6 +56,8 @@ For example, given the schema:
 
 The constructor takes a discovery document in which to look up named schema.
 """
+from __future__ import absolute_import
+import six
 
 # TODO(jcgregorio) support format, enum, minimum, maximum
 
@@ -63,7 +65,12 @@ __author__ = 'jcgregorio@google.com (Joe Gregorio)'
 
 import copy
 
-from oauth2client import util
+# Oauth2client < 3 has the positional helper in 'util', >= 3 has it
+# in '_helpers'.
+try:
+  from oauth2client import util
+except ImportError:
+  from oauth2client import _helpers as util
 
 
 class Schemas(object):
@@ -249,7 +256,7 @@ class _SchemaToStruct(object):
       self.emitEnd('{', schema.get('description', ''))
       self.indent()
       if 'properties' in schema:
-        for pname, pschema in schema.get('properties', {}).iteritems():
+        for pname, pschema in six.iteritems(schema.get('properties', {})):
           self.emitBegin('"%s": ' % pname)
           self._to_str_impl(pschema)
       elif 'additionalProperties' in schema:
