@@ -46,12 +46,14 @@ body {
 }
 .logo {
   width: 300px;
+  display:block;
+}
+.logo-link {
+  height: calc(100% - 20px) !important;
+  padding: 0 !important;
+  width: 300px;
 }
 
-.logo-link {
-  height: 100% !important;
-  padding: 0 !important;
-}
 .advContainer {
   margin: 0px 15px;
   display: table;
@@ -183,7 +185,7 @@ body {
 }
 
 .search-wrapper.card {
-  margin: 0px 12px;
+  margin: 10px 12px;
   border: 0;
 }
 .search-wrapper.card i {
@@ -195,9 +197,14 @@ body {
 .search-wrapper.card input {
   margin-bottom: 0;
 }
-.side-nav {
-  height: 100%;
+#slide-out {
+  overflow-y:hidden;
 }
+
+#slide-out:hover {
+  overflow-y: auto;
+}
+
 .side-nav li a i.material-icons.right {
   display: none;
   margin-right: 0px;
@@ -242,6 +249,21 @@ label {
   color: #444;
   font-weight: 400;
   line-height: 30px;
+}
+
+.feedback {
+  z-index: 100;
+  left: calc(100% - 9em);
+  top: calc( 100% - 60px);
+  position: absolute;
+  padding: 0.5em 1em;
+  border-radius: 2em;
+  color: #000;
+  background-color: #FFF;
+}
+.feedback:hover {
+  font-weight: 500;
+  color: rgba(204, 20, 23, 1);
 }
 .noUi-target.noUi-horizontal .noUi-active .noUi-tooltip {
   top: -8px;

@@ -13,12 +13,11 @@
 <div class="divider"></div>
 <div class="section">
   <h5>Overview</h5>
-  <p>
-    The provided labeled points are combined with other satellite datasets used to train a <a href="https://en.wikipedia.org/wiki/Random_forest">random forest</a>.
-  <p>
-    The random forest is then used to classify the rest of the image into your classes/labels.
-
+  <p> Our design brief was to develop an accurate remote sensing classification system that avoided the difficult technical details typical of satellite remote sensing. Here you can learn about how remap works. Remap relies on the incredible data storage and geospatial analysis capacities of the <a href="https://earthengine.google.com/">Google Earth Engine</a>.</p> 
+  <p> Remap requires only georeferenced training points that identify the different classes of interest, which most often representative ecosystems or land cover classes. Each training point is then intersected with a range of satellite datasets (predictors) to train a <a href="https://en.wikipedia.org/wiki/Random_forest">random forest classifier</a>. Once the random forest is trained, remap classifies all of the pixels present in a study area into one of the classes present in the training set.</p>
+  <p> Remap uses freely available, high resolution, global-scale, and publicly available biophysical (<a href="https://explorer.earthengine.google.com/#detail/USGS%2FSRTMGL1_003">slope, elevation</a>), spectral (<a href="https://explorer.earthengine.google.com/#detail/LANDSAT%2FLC8_SR">Landsat Archive imagery</a>) and climatic (<a href="https://explorer.earthengine.google.com/#detail/WORLDCLIM%2FV1%2FBIO">precipitation, temperature</a>) datasets to inform the classification. Each dataset is automatically processed into relevant indices, such as the Normalized Difference Vegetation Index, before training and running the classifier. </p>
 </div>
+
 <div class="divider"></div>
   <h5 id="predictors">Predictors</h5>
   <table class="highlight" id="predictor-table">
@@ -42,60 +41,14 @@
     </tbody>
   </table>
 
-<div class="divider"></div>
-<div class="section">
-  <h5>Datasets</h5>
-  <div class="card horizontal">
-    <div class="card-image">
-    </div>
-    <div class="card-stacked">
-      <div class="card-content">
-        <span class="card-title">Landsat</span>
-        <p>We combined the provided datapoints with  with Landsat 5, 7, 8</p>
-        From Wikipedia
-        <p>
-          The Landsat program is the longest-running enterprise for acquisition of satellite imagery of Earth. On July 23, 1972 the Earth Resources Technology Satellite was launched. This was eventually renamed to Landsat.
-        </p>
-          The most recent, Landsat 8, was launched on February 11, 2013. The instruments on the Landsat satellites have acquired millions of images. The images, archived in the United States and at Landsat receiving stations around the world, are a unique resource for global change research and applications in agriculture, cartography, geology, forestry, regional planning, surveillance and education, and can be viewed through the USGS 'EarthExplorer' website.
-        </p>
-        <p>
-          Landsat 7 data has eight spectral bands with spatial resolutions ranging from 15 to 60 meters; the temporal resolution is 16 days. Landsat images are usually divided into scenes for easy downloading. Each Landsat scene is about 115 miles long and 115 miles wide (or 100 nautical miles long and 100 nautical miles wide, or 185 kilometers long and 185 kilometers wide).
-        </p>
-      </div>
-      <div class="card-action">
-        <a href="https://landsat.usgs.gov/">Landsat website</a>
-      </div>
-  </div>
-</div>
-<div class="card horizontal">
-  <div class="card-image">
-    <img src="">
-  </div>
-  <div class="card-stacked">
-    <div class="card-content">
-      <span class="card-title">BIOCLIM</span>
-      <p>
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam accumsan urna ut arcu pharetra condimentum. Proin eu bibendum arcu. Mauris ante felis, fermentum ac urna quis, auctor consectetur purus. Ut vitae quam et nunc sagittis ultricies a a leo. Sed gravida dapibus porta. Nulla facilisi. Aliquam vel leo ac tortor mattis feugiat. In feugiat ipsum dapibus felis convallis pellentesque. Morbi efficitur, odio quis rhoncus rhoncus, magna lorem laoreet ligula, vitae fermentum nulla dui eget enim.
-
-    </div>
-    <div class="card-action">
-      <a href="http://worldclim.org/bioclim">BIOCLIM website</a>
-    </div>
-  </div>
-</div>
-<div class="divider"></div>
-<div class="section">
-  <h5>Feedback</h5>
-    
-  </div>
-</div> 
+ 
 <div class="divider"></div>
 <div class="section">
   <h5>Credits</h5>
-    our names, websites, github ect.
-    <ul>
-      <li>Color Brewer (default colours)</li>
-    </ul>
+    <p> Site developed by John Wilshire, Daniel Simpson and Nick Murray</p>
+    <p> All photographs: Nicholas Murray</p>
+    <p> Logo photograph: Rebecca Miller</p>
   </div>
 </div> 
+
 {% endblock %}

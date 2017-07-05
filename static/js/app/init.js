@@ -13,6 +13,7 @@ var listenerHandle = false
 var classified = false
 var region = false
 var refreshChart = true
+var mapBuffer = 0.01 // lat long used when we surround the csv loaded points
 // colours from  https://personal.sron.nl/~pault/
 var colours = [
   "#77AADD",
@@ -34,6 +35,7 @@ var colours = [
   "#777711",
   "#771122"
 ]
+// default vis parameters
 var vis = {mean: 0, total_sd: 1}
 
 // Initialize the Google Map and add our custom layer overlay.
@@ -44,15 +46,16 @@ var initialize = function (oauth) {
   var mapOptions = {
     center: myLatLng,
     zoom: 9,
-    scaleControl: true,
     mapTypeControlOptions: {
       position: google.maps.ControlPosition.TOP_RIGHT
     },
+    zoomControl: false,
     streetViewControl: false,
     mapTypeId: google.maps.MapTypeId.SATELLITE
   }
 
   map = new google.maps.Map($('#map')[0], mapOptions)
+
   $('#spinner').hide()
   $('#modal1').modal()
   $('#modal2').modal()

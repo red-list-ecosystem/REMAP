@@ -1,0 +1,97 @@
+{% extends 'templates/layout.html' %}
+{% block content %}
+<div id="index-banner" class="parallax-container valign-wrapper">
+  <div class="container">
+    <div class="row center">
+      <h1 class="header white-text">Tutorial</h1>
+    </div>
+  </div>
+  <div class="parallax"><img src="/static/images/NickMurray-62.jpg"></div>
+</div>
+<div class="container">
+  <div class="row">
+    <div class="col s12 m9 l10">
+      <div id="introduction" class="section scrollspy">
+        <h3 class="header">Using remap</h3>
+        <p>Remap was designed to make it as simple as possible to make maps of the landscape. The <a href="/">remap tool</a> has a simple workflow with only 7 steps required to find your area, train the classification, assess the IUCN Red List of Ecosystems criteria and download data.</p>
+
+        <p>The workflow is  supported by a few controls that allow you to alter the base layers, add classes, add training points and view your classified map. Here we will introduce the controls and remap workflow to guide you through making your first map.</p>
+      </div>
+
+      <div id="map-control" class="section scrollspy">
+        <h4 class="header" id="map control">Map Control</h4>
+        <p> Map control allows you to visualise different base layers (predictors), toggle marker points on and off and change the way colours of the base layers are rendered. Map control is particularly useful for visualising the different predictors that the model will use to classify an ecosystem type, a process that can assist in distinguishing different ecosystem types during training. </p>
+
+        <p> Predictors that can be visualised in remap include the Normalized Differenced Vegetation Index (NDVI), Normalized Differenced Water Index (NDWI), the Near Infrared band of Landsat 8, Slope, Elevation, Mean Annual Temperature, and Mean Annual Precipitation.
+        </p>
+          
+        <ul class="collection">
+          <li class="collection-item">Predictor slider: The opacity of the base predictor layer</li>
+          <li class="collection-item">Marker Visibility: Toggle the visibility of your training points</li>
+          <li class="collection-item">Sigma: The rendering range of colours of the base predictor layer </li>
+          <li class="collection-item">Predictor dropdown: Choose the base predictor layer to assist distinguishing  land cover types </li>
+        </ul>
+      </div>
+      <div id="workflow" class="section scrollspy">
+          <h4 class="header">Workflow</h4>
+          <p>
+          The workflow section of remap consists of 7 steps that should be completed sequentially to acheive and download your classified map. 
+          </p>
+      </div>
+      <div id="step-1" class="section scrollspy">
+         <h5>1. Select region of interest</h5>
+          <p> Use the search bar to find you region of interest. Click Focus Region to define the boundaries of your analysis. Change the shape of your region of interest by modifying the polygon boundaries. In general, smaller regions of interest will run faster in remap. 
+          </p>
+      </div>
+      <div id="step-2" class="section scrollspy">
+        <p><h5>2. Build training set</h5>
+        <p>In the Build Training Set section you can add new classes, name them, and use the “add markers” button to build your own training set. To name your classes or change their colour simply click the gear icon next to the highlighted class. </p>
+        <p> How many classes to add to your map? Well, if you build a training set with just one class the classifier will classify all pixels to a single class. Therefore, it's best to consider how many classes are within your training region and aim to train for all of them, even if you are only interested in a single ecosystem type. In many cases it will be sufficient to simply train the class of interest and have an "other" class to distinguish it from. Try to aim for a good number of points, say at least 40 per class. </p>
+        <p> If you have data from the field or another source, you can also upload your data as a .csv, .JSON or .kml file. Ideally, the file should have the heading 'lat', 'lng', 'label' for it to function in remap, although we do try to handle other headings.</p>
+         </p>
+      </div>
+      <div id="step-3" class="section scrollspy">
+        <h5>3. Select Predictors</h5>
+        <p>We have chosen a default set of predictor layers that will provide good results across a range of ecosystem types. However, if you wish to tune your model to a particular ecosystem type you can simply select the predictors that you want to include in the classification model. For instance, in some ecosystems, such as mangroves, slope may be an important predictor of their spatial distribution and you will want to include it in your model. Using the Map Controls, you can view many of these predictor layers to assess how important they will be for your purposes. More information about each predictor layer can be found in the <a href="/methods">methods</a> Section</p>
+      </div>
+      <div id="step-4" class="section scrollspy">
+        <h5>4. Classify </h5>
+        <p> When you are ready to run your classification, click Classify. At this point remap will request the Google Earth Engine to run the remap classification. This stepcan take up to a few minutes to run, and depends on the size of the focal region, the number of points in your training set and the number of predictors included in the model.</p>
+        <p>When the classification is complete you will be able to explore your map, compare it to other base layers and assess its accuracy. You may need to modify your training set or choice of predictors to rerun the classification. Simply modify it and click reclassify.</p>
+      </div>
+      <div id="step-5" class="section scrollspy">
+        <p><h5>5. Results </h5>
+        <p> When you classification is complete you can quantify the area of each of the mapped classes, and assess the overall accuracy of you map. Most remote sensors aim for >85% overall accuracy in their maps, so consider adding more training data, adding or removing classes, and rerunning the model. </p> </p>
+        </div>
+
+      <div id="step-6" class="section scrollspy">
+        <h5>6. Assessment </h5>
+        <p> Once you're happy with your final map, you can assess the spatial metrics required by the IUCN Red List of Ecosystems quickly and easily within remap. Simply choose the class of interest (an ecosystem type) and click assess. These metrics can be forwarded to the IUCN Red List of Ecosystems team for use in an assessment of the status of this ecosystem type.</p>
+
+      </div>
+
+      <div id="step-7" class="section scrollspy">
+        <h5>7. Export </h5>
+        <p>You can download your training points as a CSV, save as a JSON file for future reuse in remap or log in with your Google Account and download the final map as a geotiff to your Google Drive. </p>
+   
+      </div>
+    </div>
+    <div class="col hide-on-small-only m3 l2">
+      <div class="toc-wrapper ">
+        <ul class="section table-of-contents">
+          <li><a href="#introduction">Introduction</a></li>
+          <li><a href="#map-control">Map Control</a></li>
+          <li><a href="#workflow">Workflow:</a></li>
+          <li class="small-indent"><a href="#step-1">1. Region</a></li>
+          <li class="small-indent"><a href="#step-2">2. Training Set</a></li>
+          <li class="small-indent"><a href="#step-3">3. Predictors</a></li>
+          <li class="small-indent"><a href="#step-4">4. Classify</a></li>
+          <li class="small-indent"><a href="#step-5">5. Results</a></li>
+          <li class="small-indent"><a href="#step-6">6. Assessment</a></li>
+          <li class="small-indent"><a href="#step-7">7. Export</a></li>
+        </ul>
+      </div>
+    </div>
+  </div> 
+</div>
+{% endblock %}

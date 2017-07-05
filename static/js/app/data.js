@@ -47,16 +47,19 @@ function getHistData(postData) {
   refreshChart = false
   $.post('/gethistdata',
     postData,
-    function (data) { // build the chart
+    function (data, error) { // build the chart
       $('#histchart').empty()
       buildChart(data)
     }, 'json').fail(function (err) {
       Materialize.toast(err.statusText/* + ': ' + err.responseJSON.message*/, 10000, 'rounded') // responseJSON is undefined
+      console.log(err)
     }
   )
 }
 // constructs the chart from data
 function buildChart (data) {
+
+  console.log(data)
   var fix = function(x) { return Math.round(x/10000) }
 
   var chartArray = [['Class', 'Hectares', {role: 'style'}]].concat(
@@ -68,12 +71,16 @@ function buildChart (data) {
       ]
     }))
   // dont display NA area if it is less than 2 ha
-  if (fix(data.groups[classList.length].classification) > 2) {
-    chartArray.push([
-      'Not classified',
-      fix(data.groups[classList.length].classification),
-      'color: #fff'
-    ])
+  if (classList.length < data.groups.length) {
+    // if the class list length is less than the number of areas returned then
+    // a no data area has been calcualted
+    if(fix(data.groups[classList.length].classification) > 2) {
+      chartArray.push([
+        'Not classified',
+        fix(data.groups[classList.length].classification),
+        'color: #fff'
+      ])
+    }
   }
 
   var chartData = new google.visualization.arrayToDataTable(chartArray)
@@ -223,11 +230,12 @@ function buildTrainingCSV () {
       }
       if (changeRegion) {
         map.fitBounds(bounds)
+        // adds a buffer
         var polyCoords = [
-          {lat: bounds.getNorthEast().lat() + 0.01, lng: bounds.getNorthEast().lng() + 0.01},
-          {lat: bounds.getSouthWest().lat() - 0.01, lng: bounds.getNorthEast().lng() + 0.01},
-          {lat: bounds.getSouthWest().lat() - 0.01, lng: bounds.getSouthWest().lng() - 0.01},
-          {lat: bounds.getNorthEast().lat() + 0.01, lng: bounds.getSouthWest().lng() - 0.01}
+          {lat: bounds.getNorthEast().lat() + mapBuffer, lng: bounds.getNorthEast().lng() + mapBuffer},
+          {lat: bounds.getSouthWest().lat() - mapBuffer, lng: bounds.getNorthEast().lng() + mapBuffer},
+          {lat: bounds.getSouthWest().lat() - mapBuffer, lng: bounds.getSouthWest().lng() - mapBuffer},
+          {lat: bounds.getNorthEast().lat() + mapBuffer, lng: bounds.getSouthWest().lng() - mapBuffer}
         ]
         addRegion(polyCoords)
       }

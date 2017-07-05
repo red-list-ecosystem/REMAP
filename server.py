@@ -131,6 +131,11 @@ class Home(BaseHandler):
 		template = jinja_environment.get_template('templates/home.html')
 		self.response.out.write(template.render())
 
+class Tutorial(BaseHandler):
+	def get(self):
+		template = jinja_environment.get_template('templates/tutorial.html')
+		self.response.out.write(template.render())
+
 class About(BaseHandler):
 	def get(self):
 		template = jinja_environment.get_template('templates/about.html')
@@ -473,6 +478,7 @@ def handle_error(request, response, exception):
 		response.write(exception)
 	response.set_status(500)
 
+#Routing
 app = webapp2.WSGIApplication([
 	## app endpoints
 	('/', MainPage),
@@ -487,6 +493,7 @@ app = webapp2.WSGIApplication([
 	('/exportworker', ExportWorker),
 	## website endpoints
 	('/home', Home),
+	('/tutorial', Tutorial),
 	('/methods', Methods),
 	('/about', About)
 ], debug=config.DEBUG, config=wsgiConfig)

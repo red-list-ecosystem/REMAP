@@ -1,21 +1,65 @@
 parallax-container {
-  height: 400px;
-  opacity: 0.9;
+    min-height: 380px;
+    opacity: 0.5;
 }
 /* sticky footer*/
-body {
-  display: flex;
-  min-height: 100vh;
-  flex-direction: column;
-}
 
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
 .case-study {
-  width: 100%;
+    width: 100%;
 }
 main {
-  flex: 1 0 auto;
+    flex: 1 0 auto;
+}
+.three-section {
+    padding: 5em 0;
+    text-align: justify;
+}
+.icon-block {
+    padding: 0 1.5em;
+    opacity: .7;
 }
 
-three-section {
-  padding: 3em, 0em;
+.icon-block:hover {
+    opacity: 1;
+}
+
+.more-btn {
+    opacity: .7;
+    color: #000;
+    background-color: #fff;
+}
+.more-btn:hover {
+    color: #fff;
+    opacity: 1;
+}
+
+.small-desc {
+    line-height: 1.8em;
+    min-height: 300px;
+    padding: 1em;
+}
+
+/* three-icon colour is in the sass for material icons*/
+.three-icon {
+    font-size: 1.5em;
+}
+.masthead-logo {
+    width: 300px;
+}
+.small-indent {
+    padding-left: 0.5em !important;
+}
+
+.toc-wrapper {
+    position: relative;
+    top: 1px;
+}
+
+.more-btn > span {
+    padding-left: 1em;
 }
