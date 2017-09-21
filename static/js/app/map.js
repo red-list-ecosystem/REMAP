@@ -45,7 +45,13 @@ function predictorVis (reset) {
     postData.mean = vis.mean
     postData.total_sd = vis.total_sd
   }
-  $('#sigma').prop('disabled', val === 'natural')
+  if(val === 'natural' || val === 'past-natural'){
+    if(!$('#sigma-div').hasClass('hidden')){
+      $('#sigma-div').addClass('hidden')
+    }
+  } else if($('#sigma-div').hasClass('hidden')){
+    $('#sigma-div').removeClass('hidden')
+  }
   // set the select to disabled while we send the request for the vis layer
   select.prop('disabled', true)
   select.material_select()
@@ -66,7 +72,7 @@ function predictorVis (reset) {
       } else {
         map.overlayMapTypes.setAt(0, mapType)
       }
-      addLayerControl(1, 'Predictor', false)
+      addLayerControl(1, 'Predictor: ' +  $('#predictorVis option:selected').text(), false)
       var layers = localStorage.getItem('layers')
       if (layers != null) {
         addClassifiedMap(JSON.parse(layers))
@@ -76,6 +82,7 @@ function predictorVis (reset) {
       vis.total_sd = data.total_sd
     }, 'json').fail(
     function (err) {
+      console.log(err)
       Materialize.toast('Failed to get predictor layer.', 10000, 'rounded')
     }).always(function () { 
       // re-enable the predictor selector
@@ -115,6 +122,8 @@ function addMarkers () {
           icon: getIcon(classList[idx].colour)
         })
         classList[idx].markers.push(marker)
+      } else {
+        Materialize.toast('Please focus region before training a classification.', 2000, 'rounded')
       }
     })
     $('.button-collapse').sideNav('hide')
@@ -148,6 +157,7 @@ function addClassifiedMap (data) {
       tileSize: new google.maps.Size(256, 256)
     }
     // Create the map type.
+    layer.label = (past ? "1999-2003":"2014-2017") + ": " + layer.label
     var mapType = new google.maps.ImageMapType(eeMapOptions)
     if (!classified) {
       classified = true

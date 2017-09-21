@@ -1,6 +1,6 @@
 *.pyc
 *.sh
-client_secrets.json
+client_secrets/
 privatekey.pem
 config.py
 node_modules/

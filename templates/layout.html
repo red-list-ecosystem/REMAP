@@ -8,13 +8,17 @@
   <link rel="stylesheet" href="https://cdn.linearicons.com/free/1.0.0/icon-font.min.css">
   <link rel="stylesheet" href="/static/css/home-style.css">
   <meta name="theme-color" content="#a90000">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  {% block extracss %}{% endblock %}
+
 </head>
 <body>
   {% if not DEBUG %}
   <script> // Google analytics
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
     })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
     ga('create', 'UA-98429542-1', 'auto');
     ga('send', 'pageview');
@@ -22,49 +26,63 @@
   {% endif %}
   <nav>
     <div class="nav-wrapper container">
-      <a href="/home" class="brand-logo">remap</a>
-      <a href="#" data-activates="mobile-demo" class="button-collapse">
-        <i class="material-icons">menu</i>
+      <a href="/home" class="brand-logo">
+        <img src="/static/logos/Baobabs_Logo_v2_Outline_White-01.png">
+        remap
+      <!---
+      <img src="/static/images/iucn-white.png">
+      <img src="/static/images/cem-white.png">
+      <img src="/static/images/GoogleEarthEngine_Grey_108.png">
       </a>
-      <ul class="right hide-on-med-and-down">
-        <li><a href="/about">about</a></li>
-        <li><a href="/methods">methods</a></li>
-        <li><a href="/tutorial">tutorial</a></li>
-        <li><a href="/">launch remap</a></li>
-      </ul>
-      <ul class="side-nav" id="mobile-demo">
-        <li><a href="/home">home</a></li>
-        <li><a href="/about">about</a></li>
-        <li><a href="/tutorial">tutorial</a></li>
-        <li><a href="/methods">methods</a></li>
-        <li><a href="/">launch remap</a></li>
-      </ul>
-    </div>
-  </nav>
-  {% block content %}
-  {% endblock %}
-  <!-- Footer -->
-    <footer class="page-footer">
-    <div class="container">
-      <div class="row">
-        <div class="col l6 s12">
-          <h5 class="white-text">remap: remote ecosystem assessment & monitoring pipeline</h5>
-          <a href="https://goo.gl/forms/etRt1SYclK6mz8993" class="waves-effect waves-light btn more-btn">Send feedback</a>
-        </div>
-        <div class="col l4 offset-l2 s12">
-          <h5 class="white-text">Links</h5>
-          <ul>
-            <li><a class="white-text" href="http://iucnrle.org/">IUCN Red List of Ecosystems</a></li>
-            <li><a class="white-text" href="https://www.ecosystem.unsw.edu.au/">UNSW Centre for Ecosystem Science</a></li>
-            <li><a class="white-text" href="https://earthengine.google.com/">Google Earth Engine</a></li>
-            <li><a class="white-text" href="https://earthengine.google.com/terms/">Terms of service</a></li>
-            <li><a class="white-text" href="https://github.com/REMAPApp/REMAP">Github</a></li>
-          </ul>
-        </div>
+    -->
+    <a href="#" data-activates="mobile-demo" class="button-collapse">
+      <span class="lnr lnr-menu"></span>
+    </a>
+    <ul class="right hide-on-med-and-down">
+      <li><a href="/about">about</a></li>
+      <li><a href="/methods">methods</a></li>
+      <li><a href="/tutorial">tutorial</a></li>
+      <li><a href="/faq">f.a.q.</a></li>
+      <li><a href="/" target="_blank">launch remap</a></li>
+    </ul>
+    <ul class="side-nav" id="mobile-demo">
+      <li><a href="/home">Home</a></li>
+      <li><a href="/about">About</a></li>
+      <li><a href="/tutorial">Tutorial</a></li>
+      <li><a href="/methods">Methods</a></li>
+      <li><a href="/faq">F.A.Q.</a></li>
+      <li><a target="_blank" href="/">Launch Remap</a></li>
+    </ul>
+  </div>
+</nav>
+{% block content %}
+{% endblock %}
+<!-- Footer -->
+<footer class="page-footer">
+  <div class="container">
+    <div class="row">
+      <div class="col l6 s12">
+        <a href="/" class="footer-logo">remap</a>
+        <a href="/" class="footer-sub-logo">remote ecosystem assessment & monitoring pipeline</a>
+        <p>
+        <a href="https://goo.gl/forms/etRt1SYclK6mz8993" target="_blank" class="waves-effect waves-light btn more-btn">Give feedback</a>
+      </div>
+      <div class="col l4 offset-l2 s12">
+        <h5 class="white-text">Links</h5>
+        <ul>
+          <li><a class="white-text" href="http://iucnrle.org/">IUCN Red List of Ecosystems</a></li>
+          <li><a class="white-text" href="https://www.ecosystem.unsw.edu.au/">UNSW Centre for Ecosystem Science</a></li>
+          <li><a class="white-text" href="https://earthengine.google.com/">Google Earth Engine</a></li>
+          <li><a class="white-text" href="https://earthengine.google.com/terms">Terms of service</a></li>
+          <li><a class="white-text" href="/privacy">Our privacy policy</a></li>
+          <li><a class="white-text" href="/faq">Frequently Asked Questions</a></li>
+          <li><a class="white-text" href="https://github.com/REMAPApp/REMAP">Github</a></li>
+        </ul>
       </div>
     </div>
-    <div class="footer-copyright">
-      <div class="container">
+  </div>
+  <div class="footer-copyright">
+    <div class="container">
       <div class="white-text">© 2017 Copyright</div>
     </div>
   </footer>

@@ -73,9 +73,10 @@ function refreshAssessmentSelect() {
   $('#assessment_select').children().remove()
   classList.forEach( function (x, i) {
     $('#assessment_select').append(
-      $('<option>')
-        .attr('value', i)
-        .text(x.name))
+      $('<option>', {
+        value: i,
+        text: x.name
+      }))
   })
   $('#assessment_select').material_select()
 }
@@ -154,10 +155,11 @@ function updateRGB () {
 */
 
 /* POSTS the training set to our server and adds the classification to the map layers */
-function giveTraining () {
+function giveTraining (past_) {
+  past = past_ // set the global past object
   refreshChart = true
   $('#spinner').show()
-  $('#classify').text('4. Classifying!')
+  $('#classify').text('Classifying!')
   var postData = buildPostData()
   // fire a post request with our training data to get the map id
   $('.button-collapse').sideNav('hide')
@@ -166,7 +168,7 @@ function giveTraining () {
     addClassifiedMap, 'json')
     .fail(function (err) { // alert the user that something has gone wrong
       $('#spinner').hide()
-      $('#classify').text('4. Classify!')
+      $('#classify').text('Classify!')
       Materialize.toast(err.responseJSON.message, 10000, 'rounded')
     })
     .done(function () {
@@ -204,9 +206,7 @@ function getHistData(postData) {
 }
 // constructs the chart from data
 function buildChart (data) {
-
-  console.log(data)
-  var fix = function(x) { return Math.round(x/10000) }
+  var fix = function(x) { return Math.round(x/1e4) }
 
   var chartArray = [['Class', 'Hectares', {role: 'style'}]].concat(
     classList.map(function (x, i) {
@@ -243,28 +243,44 @@ function buildChart (data) {
 
 function runAssessment () {
   $('#assessment_btn').addClass('disabled')
+  $('#assessment-label').text(
+    (past ? 'Past ' : '') +  $('#assessment_select :selected').text())
+  $('#assessment-modal').modal('open')
+
+  $('#assessment-loading').removeClass('hidden')
+  $('#assessment-results-row').addClass('hidden')
+
   var training = buildPostData()
   $.post('/getassessment',
     training,
     function (data){
-      $('#assessmentResults').children().remove()
-      $('#assessmentResults').append($('<table>')
-        .append($('<tr>').append(
-          $('<td>').append($('<b>').text('Area:')),
-          $('<td>').text(data.area)
-        ), $('<tr>').append(
-          $('<td>').append($('<b>').text('EOO:')),
-          $('<td>').text(data.eoo)
-        ), $('<tr>').append(
-          $('<td>').append($('<b>').text('Units:')),
-          $('<td>').text(data.units)
-        ))
+      // populate the results
+      // console.log(data)
+      $('#assessment-area').text(
+        'Total Area: ' + data.area.toFixed(3) + ' ' + data.units
       )
+      $('#assessment-eoo').text(
+        'EOO: ' + data.eoo.toFixed(3) + ' ' + data.units
+      )
+      $('#assessment-aoo').text(
+        'AOO: '+ data.aoo + ' Grids'
+      )
+      $('#assessment-aoo-1pc').text(
+        'AOO 1%: ' + data.aoo_1pc + ' Grids'
+      )
+      $('#assessment-loading').addClass('hidden')
+      $('#assessment-results-row').removeClass('hidden')
     },
     'json'
   ).fail(function(err) {
+    $('#assessment-modal').modal('close')
+    $('#assessment_btn').removeClass('disabled')
+    console.log(err)
     // TODO: something more informative
-    Materialize.toast('Assessment Error', 5000, 'rounded')
+    Materialize.toast('Assessment Error: '+ err.responseJSON.message, 5000, 'rounded')
+  })
+  .always(function() {
+    $('#assessment_btn').removeClass('disabled')
   })
 }
 /** constructs the data packet that we send to our server to get the
@@ -274,7 +290,8 @@ function runAssessment () {
 */
 function buildPostData () {
   var training = {}
-  // get the region that the user has selected
+  training.past = past
+    // get the region that the user has selected
   training.region = regionPath()
   training.selected = $('#assessment_select').val()
   training.predictors = $('#predictors').val()
@@ -326,6 +343,7 @@ function buildTrainingKML () {
     }
   }
   reader.readAsText(file)
+  $('#modal3').modal('close')
 }
 
 /*  Builds a training set from a csv */
@@ -394,6 +412,7 @@ function buildTrainingCSV () {
     }
   }
   reader.readAsText(file)
+  $('#modal3').modal('close')
 }
 
 /* Builds a training set from a json */
@@ -407,6 +426,8 @@ function buildTrainingJSON () {
     }
   }
   reader.readAsText(file)
+  $('#modal3').modal('close')
+  
 }
 
 function getPerformance (postData) {
@@ -501,17 +522,14 @@ function resetTraining () {
 }
 
 function uploadClick () {
-  $('#modal3').modal('close')
   $('#csv')[0].click()
 }
 
 function uploadJSONClick () {
-  $('#modal3').modal('close')
   $('#json')[0].click()
 }
 
 function uploadKMLClick () {
-  $('#modal3').modal('close')
   $('#kml')[0].click()
 }
 
@@ -627,6 +645,7 @@ function loadFromJSON (data) {
       })
     }
   }
+  refreshAssessmentSelect()
   return true
 }
 
@@ -646,6 +665,7 @@ var classified = false
 var region = false
 var refreshChart = true
 var mapBuffer = 0.01 // lat long used when we surround the csv loaded points
+var past = false;
 // colours from  https://personal.sron.nl/~pault/
 var colours = [
   "#77AADD",
@@ -667,11 +687,13 @@ var colours = [
   "#777711",
   "#771122"
 ]
+
 // default vis parameters
 var vis = {mean: 0, total_sd: 1}
 
+var log = function (x) { }
 // Initialize the Google Map and add our custom layer overlay.
-var initialize = function (oauth) {
+var initialize = function (oauth, reload) {
   google.charts.load('current', {packages: ['corechart', 'bar']})
   // Create the base Google Map.
   var myLatLng = new google.maps.LatLng(-35.8691162172, 137.320622559)
@@ -682,6 +704,7 @@ var initialize = function (oauth) {
       position: google.maps.ControlPosition.TOP_RIGHT
     },
     zoomControl: false,
+    scaleControl: true,
     streetViewControl: false,
     mapTypeId: google.maps.MapTypeId.SATELLITE
   }
@@ -692,6 +715,11 @@ var initialize = function (oauth) {
   $('#modal1').modal()
   $('#modal2').modal()
   $('#modal3').modal()
+  $('#assessment-modal').modal({
+    complete: function () {
+      $('#assessment_btn').removeClass('disabled')
+    }
+  })
 
   if (window.matchMedia('(max-width: 992px)').matches) {
     $('#mobile-modal').modal()
@@ -701,10 +729,10 @@ var initialize = function (oauth) {
     oauthTrue()
   } else {
     oauthFalse()
-    if (oauth !== 'reload') {
-      localStorage.removeItem('mapData')
-      localStorage.removeItem('layers')
-    }
+  }
+  if (reload !== 'true') {
+    localStorage.removeItem('mapData')
+    localStorage.removeItem('layers')
   }
   reloadTraining()
 
@@ -852,7 +880,13 @@ function predictorVis (reset) {
     postData.mean = vis.mean
     postData.total_sd = vis.total_sd
   }
-  $('#sigma').prop('disabled', val === 'natural')
+  if(val === 'natural' || val === 'past-natural'){
+    if(!$('#sigma-div').hasClass('hidden')){
+      $('#sigma-div').addClass('hidden')
+    }
+  } else if($('#sigma-div').hasClass('hidden')){
+    $('#sigma-div').removeClass('hidden')
+  }
   // set the select to disabled while we send the request for the vis layer
   select.prop('disabled', true)
   select.material_select()
@@ -873,7 +907,7 @@ function predictorVis (reset) {
       } else {
         map.overlayMapTypes.setAt(0, mapType)
       }
-      addLayerControl(1, 'Predictor', false)
+      addLayerControl(1, 'Predictor: ' +  $('#predictorVis option:selected').text(), false)
       var layers = localStorage.getItem('layers')
       if (layers != null) {
         addClassifiedMap(JSON.parse(layers))
@@ -883,6 +917,7 @@ function predictorVis (reset) {
       vis.total_sd = data.total_sd
     }, 'json').fail(
     function (err) {
+      console.log(err)
       Materialize.toast('Failed to get predictor layer.', 10000, 'rounded')
     }).always(function () { 
       // re-enable the predictor selector
@@ -922,6 +957,8 @@ function addMarkers () {
           icon: getIcon(classList[idx].colour)
         })
         classList[idx].markers.push(marker)
+      } else {
+        Materialize.toast('Please focus region before training a classification.', 2000, 'rounded')
       }
     })
     $('.button-collapse').sideNav('hide')
@@ -955,6 +992,7 @@ function addClassifiedMap (data) {
       tileSize: new google.maps.Size(256, 256)
     }
     // Create the map type.
+    layer.label = (past ? "1999-2003":"2014-2017") + ": " + layer.label
     var mapType = new google.maps.ImageMapType(eeMapOptions)
     if (!classified) {
       classified = true
@@ -1023,13 +1061,36 @@ function reloadTraining () {
   }
 }
 
-function signOut () {
+function signOutShared () {
   $.post('/logout')
   $('#g-sign-in').show()
   $('#g-download .waves-effect').addClass('subheader')
   $('#g-sign-out').hide()
+  $('#useremail').text('Not signed in.')
 }
 
+function signOut () {
+  signOutShared()
+}
+
+function signOutChange () {
+  signOutShared()
+  var ourl = $('#g-sign-in a').attr('href')
+  var oarr = ourl.split('&')
+  for (var i = 0; i < oarr.length; i++) {
+    if (oarr[i] == 'access_type=offline') {
+      if (i == oarr.length - 1) {
+        oarr.push('approval_prompt=force')
+      } else if (oarr[i + 1] != 'approval_prompt=force') {
+        oarr.splice(i + 1, 0, 'approval_prompt=force')
+      }
+      break
+    }
+  }
+  var newourl = oarr.join('&')
+  $('#g-sign-in a').attr('href', newourl)
+  $('#g-sign-in a')[0].click()
+}
 /**
  Daniel Simpson,
  John Wilshire

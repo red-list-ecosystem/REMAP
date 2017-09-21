@@ -19,6 +19,7 @@ nav {
   width: 100%;
   height: $navbar-height-mobile;
   line-height: $navbar-line-height-mobile;
+  font-weight: 100;
 
   a { color: $navbar-font-color; }
 
@@ -64,6 +65,8 @@ nav {
     font-size: $navbar-brand-font-size;
     padding: 0;
     white-space: nowrap;
+    letter-spacing: 1px;
+
 
     &.center {
       left: 50%;
@@ -98,8 +101,6 @@ nav {
       margin-right: 15px;
     }
   }
-
-
   // Title
   .nav-title {
     display: inline-block;

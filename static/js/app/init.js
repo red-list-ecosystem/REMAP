@@ -14,6 +14,7 @@ var classified = false
 var region = false
 var refreshChart = true
 var mapBuffer = 0.01 // lat long used when we surround the csv loaded points
+var past = false;
 // colours from  https://personal.sron.nl/~pault/
 var colours = [
   "#77AADD",
@@ -35,11 +36,13 @@ var colours = [
   "#777711",
   "#771122"
 ]
+
 // default vis parameters
 var vis = {mean: 0, total_sd: 1}
 
+var log = function (x) { }
 // Initialize the Google Map and add our custom layer overlay.
-var initialize = function (oauth) {
+var initialize = function (oauth, reload) {
   google.charts.load('current', {packages: ['corechart', 'bar']})
   // Create the base Google Map.
   var myLatLng = new google.maps.LatLng(-35.8691162172, 137.320622559)
@@ -50,6 +53,7 @@ var initialize = function (oauth) {
       position: google.maps.ControlPosition.TOP_RIGHT
     },
     zoomControl: false,
+    scaleControl: true,
     streetViewControl: false,
     mapTypeId: google.maps.MapTypeId.SATELLITE
   }
@@ -60,6 +64,11 @@ var initialize = function (oauth) {
   $('#modal1').modal()
   $('#modal2').modal()
   $('#modal3').modal()
+  $('#assessment-modal').modal({
+    complete: function () {
+      $('#assessment_btn').removeClass('disabled')
+    }
+  })
 
   if (window.matchMedia('(max-width: 992px)').matches) {
     $('#mobile-modal').modal()
@@ -69,10 +78,10 @@ var initialize = function (oauth) {
     oauthTrue()
   } else {
     oauthFalse()
-    if (oauth !== 'reload') {
-      localStorage.removeItem('mapData')
-      localStorage.removeItem('layers')
-    }
+  }
+  if (reload !== 'true') {
+    localStorage.removeItem('mapData')
+    localStorage.removeItem('layers')
   }
   reloadTraining()
 

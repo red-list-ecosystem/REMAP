@@ -33,11 +33,11 @@
 // 1. Colors
 // ==========================================================================
 
-$primary-color: color("materialize-red", "lighten-2") !default;
+$primary-color: #cc1417 !default; //color("red", "darken-1") !default; //#a90000 !default; //color("red", "darken-1") !default;
 $primary-color-light: lighten($primary-color, 15%) !default;
 $primary-color-dark: darken($primary-color, 15%) !default;
 
-$secondary-color: color("teal", "lighten-1") !default;
+$secondary-color: #333333 !default; //color("red", "base") !default;
 $success-color: color("green", "base") !default;
 $error-color: color("red", "base") !default;
 $link-color: color("light-blue", "darken-1") !default;
@@ -55,10 +55,10 @@ $badge-height: 22px !default;
 
 // Shared styles
 $button-border: none !default;
-$button-background-focus: lighten($secondary-color, 4%) !default;
+$button-background-focus: lighten($primary-color, 10%) !default;
 $button-font-size: 1.3rem !default;
 $button-height: 36px !default;
-$button-padding: 0 2rem !default;
+$button-padding: 0 1rem !default;
 $button-radius: 2px !default;
 
 // Disabled styles
@@ -181,8 +181,8 @@ $select-radius: 2px !default;
 $select-disabled-color: rgba(0,0,0,.3) !default;
 
 // Switches
-$switch-bg-color: $secondary-color !default;
-$switch-checked-lever-bg: desaturate(lighten($secondary-color, 25%), 25%) !default;
+$switch-bg-color: $primary-color !default;
+$switch-checked-lever-bg: desaturate(lighten($primary-color, 25%), 25%) !default;
 $switch-unchecked-bg: #F1F1F1 !default;
 $switch-unchecked-lever-bg: #818181 !default;
 $switch-radius: 15px !default;
@@ -210,7 +210,7 @@ $medium-only: "only screen and (min-width : #{$small-screen-up}) and (max-width 
 // ==========================================================================
 
 $num-cols: 12 !default;
-$gutter-width: 1.5rem !default;
+$gutter-width: 1rem !default;
 $element-top-margin: $gutter-width/3 !default;
 $element-bottom-margin: ($gutter-width*2)/3 !default;
 
@@ -232,7 +232,7 @@ $navbar-brand-font-size: 2.1rem !default;
 $sidenav-font-size: 14px !default;
 $sidenav-font-color: rgba(0,0,0,.87) !default;
 $sidenav-bg-color: #fff !default;
-$sidenav-padding: 16px !default;
+$sidenav-padding: 10px !default;
 $sidenav-item-height: 48px !default;
 $sidenav-line-height: $sidenav-item-height !default;
 
@@ -307,7 +307,7 @@ $interval-size: $range / $intervals !default;
 $collection-border-color: #e0e0e0 !default;
 $collection-bg-color: #fff !default;
 $collection-active-bg-color: $secondary-color !default;
-$collection-active-color: lighten($secondary-color, 55%) !default;
+$collection-active-color: $primary-color-light !default;
 $collection-hover-bg-color: #ddd !default;
 $collection-link-color: $secondary-color !default;
 $collection-line-height: 1.5rem !default;

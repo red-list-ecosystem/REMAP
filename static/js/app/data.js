@@ -8,10 +8,11 @@
 */
 
 /* POSTS the training set to our server and adds the classification to the map layers */
-function giveTraining () {
+function giveTraining (past_) {
+  past = past_ // set the global past object
   refreshChart = true
   $('#spinner').show()
-  $('#classify').text('4. Classifying!')
+  $('#classify').text('Classifying!')
   var postData = buildPostData()
   // fire a post request with our training data to get the map id
   $('.button-collapse').sideNav('hide')
@@ -20,7 +21,7 @@ function giveTraining () {
     addClassifiedMap, 'json')
     .fail(function (err) { // alert the user that something has gone wrong
       $('#spinner').hide()
-      $('#classify').text('4. Classify!')
+      $('#classify').text('Classify!')
       Materialize.toast(err.responseJSON.message, 10000, 'rounded')
     })
     .done(function () {
@@ -58,9 +59,7 @@ function getHistData(postData) {
 }
 // constructs the chart from data
 function buildChart (data) {
-
-  console.log(data)
-  var fix = function(x) { return Math.round(x/10000) }
+  var fix = function(x) { return Math.round(x/1e4) }
 
   var chartArray = [['Class', 'Hectares', {role: 'style'}]].concat(
     classList.map(function (x, i) {
@@ -97,28 +96,44 @@ function buildChart (data) {
 
 function runAssessment () {
   $('#assessment_btn').addClass('disabled')
+  $('#assessment-label').text(
+    (past ? 'Past ' : '') +  $('#assessment_select :selected').text())
+  $('#assessment-modal').modal('open')
+
+  $('#assessment-loading').removeClass('hidden')
+  $('#assessment-results-row').addClass('hidden')
+
   var training = buildPostData()
   $.post('/getassessment',
     training,
     function (data){
-      $('#assessmentResults').children().remove()
-      $('#assessmentResults').append($('<table>')
-        .append($('<tr>').append(
-          $('<td>').append($('<b>').text('Area:')),
-          $('<td>').text(data.area)
-        ), $('<tr>').append(
-          $('<td>').append($('<b>').text('EOO:')),
-          $('<td>').text(data.eoo)
-        ), $('<tr>').append(
-          $('<td>').append($('<b>').text('Units:')),
-          $('<td>').text(data.units)
-        ))
+      // populate the results
+      // console.log(data)
+      $('#assessment-area').text(
+        'Total Area: ' + data.area.toFixed(3) + ' ' + data.units
       )
+      $('#assessment-eoo').text(
+        'EOO: ' + data.eoo.toFixed(3) + ' ' + data.units
+      )
+      $('#assessment-aoo').text(
+        'AOO: '+ data.aoo + ' Grids'
+      )
+      $('#assessment-aoo-1pc').text(
+        'AOO 1%: ' + data.aoo_1pc + ' Grids'
+      )
+      $('#assessment-loading').addClass('hidden')
+      $('#assessment-results-row').removeClass('hidden')
     },
     'json'
   ).fail(function(err) {
+    $('#assessment-modal').modal('close')
+    $('#assessment_btn').removeClass('disabled')
+    console.log(err)
     // TODO: something more informative
-    Materialize.toast('Assessment Error', 5000, 'rounded')
+    Materialize.toast('Assessment Error: '+ err.responseJSON.message, 5000, 'rounded')
+  })
+  .always(function() {
+    $('#assessment_btn').removeClass('disabled')
   })
 }
 /** constructs the data packet that we send to our server to get the
@@ -128,7 +143,8 @@ function runAssessment () {
 */
 function buildPostData () {
   var training = {}
-  // get the region that the user has selected
+  training.past = past
+    // get the region that the user has selected
   training.region = regionPath()
   training.selected = $('#assessment_select').val()
   training.predictors = $('#predictors').val()
@@ -180,6 +196,7 @@ function buildTrainingKML () {
     }
   }
   reader.readAsText(file)
+  $('#modal3').modal('close')
 }
 
 /*  Builds a training set from a csv */
@@ -248,6 +265,7 @@ function buildTrainingCSV () {
     }
   }
   reader.readAsText(file)
+  $('#modal3').modal('close')
 }
 
 /* Builds a training set from a json */
@@ -261,6 +279,8 @@ function buildTrainingJSON () {
     }
   }
   reader.readAsText(file)
+  $('#modal3').modal('close')
+  
 }
 
 function getPerformance (postData) {
@@ -355,17 +375,14 @@ function resetTraining () {
 }
 
 function uploadClick () {
-  $('#modal3').modal('close')
   $('#csv')[0].click()
 }
 
 function uploadJSONClick () {
-  $('#modal3').modal('close')
   $('#json')[0].click()
 }
 
 function uploadKMLClick () {
-  $('#modal3').modal('close')
   $('#kml')[0].click()
 }
 
@@ -481,5 +498,6 @@ function loadFromJSON (data) {
       })
     }
   }
+  refreshAssessmentSelect()
   return true
 }

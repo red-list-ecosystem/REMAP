@@ -2,7 +2,7 @@
 <html>
   <head>
     <!-- metas -->
-    <title>REMAP | A Remote Ecosystem Mapping and Assessment Pipeline</title>
+    <title>remap | A Remote Ecosystem Mapping and Assessment Pipeline</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="REMAP is a mapping tool that enables the mapping and assessment of remote ecosystems, REMAP uses Google Earth Engine to produce a high quality map." >
@@ -35,7 +35,7 @@
       <div class="wrapper-left">
         <ul id="slide-out" class="side-nav fixed">
           <!-- logo header etc -->
-          <li><a class="logo-link" href="/home"><img class="logo" src="/static/images/Baobabs_Logo_v1_Sponsors-01.png"></a></li>
+          <li><a class="logo-link" href="/home"><img class="logo" src="/static/logos/LogoRedSponsors_v1_small-01.png"></a></li>
           <!-- search box -->
           <li>
             <div class="search-wrapper card">
@@ -44,9 +44,8 @@
               <div class="search-results"></div>
             </div>
           </li>
-          <div class="divider"></div>
           <li>
-            <div class="container">
+            <div class="opacity-control">
               <div id="classification-control"></div>
               <div id="predictor-control"></div>
             </div>
@@ -66,6 +65,18 @@
                     </label>
                   </div>
                   <div class="input-field col s12">
+                    <select id="predictorVis" onchange="predictorVis(true)">
+                      <option value="natural">Landsat 14-17</option>
+                      <option value="past-natural">Landsat 99-03</option>
+                      {% for predictor in predictors %}
+                        {% if predictor.vis %}
+                          <option value="{{ predictor.short_name }}"> {{ predictor.short_name }}</option>
+                        {% endif %}
+                      {% endfor %}
+                    </select>
+                    <label>Predictor:</label>
+                  </div>
+                  <div class="input-field col s12" id="sigma-div">
                     <select id="sigma" onchange="predictorVis()">
                       <option value="1">1</option>
                       <option value="1.5">1.5</option>
@@ -75,153 +86,142 @@
                     </select>
                     <label>Sigma</label>
                   </div>
-                  <div class="input-field col s12">
-                    <select id="predictorVis" onchange="predictorVis(true)">
-                      <option value="natural">Landsat Median</option>
-                      {% for predictor in predictors %}
-                        {% if predictor.vis %}
-                        <option value="{{ predictor.short_name }}"> {{ predictor.short_name }}</option>
-                        {% endif %}
-                      {% endfor %}
-                    </select>
-                    <label>Predictor:</label>
-                  </div>
                 </div>
             </li>
           </ul>
           <div class="divider"></div>
-          <ul class="collapsible collapsible-accordion">
-            <li>
-              <a class="collapsible-header">
-                <i class="material-icons">forward</i>
-                <b>Workflow:</b>
-              </a>
-            </li>
-            <li><a class="collapsible-header waves-effect" onclick="reFocusRegion()"><i class="material-icons">games</i>1. Focus Region</a></li>
-            <!-- 2. Build Training Set -->
-            <li class="no-padding">
-              <ul class="collapsible collapsible-accordion">
-                <li>
-                  <a class="collapsible-header"><i class="material-icons">room</i>2. Build Training Set</a>
-                  <div class="collapsible-body">
-                    <ul>
-                      <li><a class="modal-trigger waves-effect" href="#modal3"><i class="material-icons">file_upload</i>Upload Data</a></li>
-                      <li><div class="divider"></div></li>
-                      <li class="container">Or</li>
-                      <li><div class="divider topless"></div></li>
-                      <li id="addMarkers"><a class="waves-effect" onclick="addMarkers()"><i class="material-icons">add_location</i>Add Markers</a></li>
-                      <li><div class="divider"></div></li>
-                      <li id="classListEnd"><div class="divider"></div></li>
-                      <li><a class="waves-effect" onclick="addClass()"><i class="material-icons">add</i>Add New Class</a></li>
-                      <li><div class="divider topless"></div></li>
-                      <li><a class="waves-effect" onclick="resetTraining()"><i class="material-icons">delete</i>Reset Training Data</a></li>
-                    </ul>
+          <li><a class="collapsible-header waves-effect" onclick="reFocusRegion()"><i class="material-icons">games</i>Focus Region</a></li>
+          <!-- 2. Build Training Set -->
+          <li class="no-padding">
+            <ul class="collapsible collapsible-accordion">
+              <li>
+                <a class="collapsible-header"><i class="material-icons">room</i>Build Training Set</a>
+                <div class="collapsible-body">
+                  <ul>
+                    <li><a class="modal-trigger waves-effect" href="#modal3"><i class="material-icons">file_upload</i>Upload Data</a></li>
+                    <li class="text-divider">Or</li>
+                    <li id="addMarkers"><a class="waves-effect" onclick="addMarkers()"><i class="material-icons">add_location</i>Add Markers</a></li>
+                    <li><div class="divider"></div></li>
+                    <li id="classListEnd"><div class="divider"></div></li>
+                    <li><a class="waves-effect" onclick="addClass()"><i class="material-icons">add</i>Add New Class</a></li>
+                    <li><div class="divider topless"></div></li>
+                    <li><a class="waves-effect" onclick="resetTraining()"><i class="material-icons">delete</i>Reset Training Data</a></li>
+                  </ul>
+                </div>
+              </li>
+            </ul>
+          </li>
+          <!-- 3. Predictors -->
+          <li class="no-padding">
+            <ul class="collapsible collapsible-accordion">
+              <li>
+                <a class="collapsible-header"><i class="material-icons">toc</i>Select Predictors</a>
+                <div class="collapsible-body">
+                  <a href="methods#predictors" target="_blank">Which predictors to use?</a>
+                  <div class="input-field">
+                    <select multiple id="predictors">
+                       <option value="" disabled selected>Choose predictors</option>
+                      {% for predictor in predictors %}
+                        <option value="{{ predictor.short_name }}" 
+                          {% if predictor.checked %}
+                            selected="selected"
+                          {% endif %}>{{ predictor.long_name }}</option>
+                      {% endfor %}
+                    </select> 
                   </div>
-                </li>
-              </ul>
-            </li>
-            <!-- 3. Predictors -->
-            <li class="no-padding">
-              <ul class="collapsible collapsible-accordion">
-                <li>
-                  <a class="collapsible-header"><i class="material-icons">toc</i>3. Select Predictors</a>
-                  <div class="collapsible-body">
-                    <a href="methods#predictors" target="_blank">Which predictors to use?</a>
-                    <div class="input-field">
-                      <select multiple id="predictors">
-                         <option value="" disabled selected>Choose predictors</option>
-                        {% for predictor in predictors %}
-                          <option value="{{ predictor.short_name }}" 
-                            {% if predictor.checked %}
-                              selected="selected"
-                            {% endif %}>{{ predictor.long_name }}</option>
-                        {% endfor %}
-                      </select> 
+                </div>
+              </li>
+            </ul>
+          </li>
+          <!-- 4. Classify -->
+          <li class="no-padding">
+            <ul class="collapsible collapsible-accordion">
+              <li>
+                <a class="collapsible-header waves-effect"><i class="green-text material-icons">play_arrow</i>Classify!</a>
+                <div class="collapsible-body">
+                  <div class="classify-container">
+                    <a class="classify-btn btn" onclick="giveTraining(false)">Default (2014-2017)</a>
+                    <a class="classify-btn btn" onclick="giveTraining(true)">Past (1999-2003)</a>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </li>
+          <!-- 5. Results -->
+          <li class="no-padding">
+            <ul class="collapsible collapsible-accordion">
+              <li>
+                <a class="collapsible-header"><i class="material-icons">assessment</i>Results</a>
+                <div class="collapsible-body">
+                  <ul><li id="results"><a>No results yet.</a></li></ul>
+                  <ul id="resultsList"></ul>
+                </div>
+              </li>
+            </ul>
+          </li>
+          <!-- 6. Assessment -->
+          <li class="no-padding">
+            <ul class="collapsible collapsible-accordion">
+              <li>
+                <a class="collapsible-header"><i class="material-icons">show_chart</i>Assessment</a>
+                <div class="collapsible-body">
+                  <ul>
+                    <div class="container">
+                      <label>Class of interest</label>
+                      <select id="assessment_select"></select>
+                      <a id="assessment_btn" class="more-btn btn" onClick="runAssessment()"> Run Assessment</a>
                     </div>
-                  </div>
-                </li>
-              </ul>
-            </li>
-            <!-- 4. Classify -->
-            <li class="no-padding">
-              <a class="collapsible-header waves-effect" onclick="giveTraining()">
-                <i class="green-text material-icons">play_arrow</i>
-                <div id="classify">4. Classify!</div>
-              </a>
-            </li>
-            <!-- 5. Results -->
-            <li class="no-padding">
-              <ul class="collapsible collapsible-accordion">
-                <li>
-                  <a class="collapsible-header"><i class="material-icons">assessment</i>5. Results</a>
-                  <div class="collapsible-body">
-                    <ul><li id="results"><a>No results yet.</a></li></ul>
-                    <ul id="resultsList"></ul>
-                  </div>
-                </li>
-              </ul>
-            </li>
-            <!-- 6. Assessment -->
-            <li class="no-padding">
-              <ul class="collapsible collapsible-accordion">
-                <li>
-                  <a class="collapsible-header"><i class="material-icons">show_chart</i>6. Assessment</a>
-                  <div class="collapsible-body">
-                    <ul>
-                      <div class="container">
-                        <label>Class of interest</label>
-                        <select id="assessment_select">
-                        </select>
-                        <a id="assessment_btn" class="btn" onClick="runAssessment()"> Run Assessment</a>
-                        <div id="assessmentResults"></div>
-                      </div>
-                      <li><a class="tooltipped" data-delay="50" data-position="right" data-tooltip="The Assessment step performs analysis on a specific class of interest.">Help</a></li>
-                    </ul> 
-                  </div>
-                </li>
-              </ul>
-            </li>
-            <!-- 7. export -->
-            <li class="no-padding">
-              <ul class="collapsible collapsible-accordion">
-                <li>
-                  <a class="collapsible-header"><i class="material-icons">import_export</i>7. Export Data</a>
-                  <div class="collapsible-body">
-                    <ul>
-                      <li><a class="waves-effect" id="csvDownload" download="remap_points.csv" onclick="prepareDownload()"><i class="material-icons">pin_drop</i>Download CSV</a></li>
-                      <li><a class="waves-effect" id="jsonDownload" download="remap_training.json" onclick="dataDownload()"><i class="material-icons">file_download</i>Download JSON</a></li>
-                      <li id="g-info"><a class="subheader">To Download the GeoTIFF:</a></li>
-                      <li id="g-sign-in"><a class="waves-effect" href="{{ oauth_url }}" onclick="loginClick()"><i class="gimg"><img class="glogo" src="static/g-logo.png"></i>Sign in with Google</a></li>
-                      <li id="g-download"><a class="subheader waves-effect" onclick="downloadDrive()"><i class="material-icons">cloud_download</i>Drive export GeoTIFF
-                        <div id="gspinner" class="preloader-wrapper small active">
-                          <div class="spinner-layer spinner-blue-only">
-                            <div class="circle-clipper left">
-                              <div class="circle"></div>
-                            </div>
-                            <div class="gap-patch">
-                              <div class="circle"></div>
-                            </div>
-                            <div class="circle-clipper right">
-                              <div class="circle"></div>
-                            </div>
+                  </ul> 
+                </div>
+              </li>
+            </ul>
+          </li>
+          <!-- 7. export -->
+          <li class="no-padding">
+            <ul class="collapsible collapsible-accordion">
+              <li>
+                <a class="collapsible-header"><i class="material-icons">import_export</i>Export Data</a>
+                <div class="collapsible-body">
+                  <ul>
+                    <li><a class="waves-effect" id="csvDownload" download="remap_points.csv" onclick="prepareDownload()"><i class="material-icons">pin_drop</i>Download CSV</a></li>
+                    <li><a class="waves-effect" id="jsonDownload" download="remap_training.json" onclick="dataDownload()"><i class="material-icons">file_download</i>Download JSON</a></li>
+                    <li id="g-info"><a class="subheader">To Download the GeoTIFF:</a></li>
+                    <li id="g-sign-in"><a class="waves-effect" href="{{ oauth_url }}" onclick="loginClick()"><i class="gimg"><img class="glogo" src="static/g-logo.png"></i>Sign in with Google</a></li>
+                    <li id="g-download"><a class="subheader waves-effect" onclick="downloadDrive()"><i class="material-icons">cloud_download</i>Drive export GeoTIFF
+                      <div id="gspinner" class="preloader-wrapper small active">
+                        <div class="spinner-layer spinner-blue-only">
+                          <div class="circle-clipper left">
+                            <div class="circle"></div>
+                          </div>
+                          <div class="gap-patch">
+                            <div class="circle"></div>
+                          </div>
+                          <div class="circle-clipper right">
+                            <div class="circle"></div>
                           </div>
                         </div>
-                        <i id="gtick" class="green-text right material-icons">done</i>
-                        <i id="gcross" class="red-text right material-icons">clear</i>
-                      </a></li>
-                      <li id="g-sign-out"><a class="waves-effect" onclick="signOut()"><i class="gimg"><img class="glogo" src="static/g-logo.png"></i>Sign out from Google</a></li>
-                    </ul>
-                  </div>
-                </li>
-              </ul>
-            </li>
-            <li class="no-padding">
-              <a class="collapsible-header" href="/home" target="_blank">
-                <i class="material-icons">info</i>
-                Site Info and Methods
-              </a>
-            </li></ul>
-          </ul>
+                      </div>
+                      <i id="gtick" class="green-text right material-icons">done</i>
+                      <i id="gcross" class="red-text right material-icons">clear</i>
+                    </a></li>
+                    <li id="g-sign-out"><a class="waves-effect" onclick="signOut()"><i class="gimg"><img class="glogo" src="static/g-logo.png"></i>Sign out</a></li>
+                    <li><a class="waves-effect" onclick="signOutChange()"><i class="gimg"><img class="glogo" src="static/g-logo.png"></i>Change user</a></li>
+                  </ul>
+                </div>
+              </li>
+            </ul>
+          </li>
+          <li class="no-padding">
+            <a id="useremail" class="subheader" target="_blank">
+              {{ email }}
+            </a>
+          </li>
+          <li class="no-padding">
+            <a class="collapsible-header" href="/home" target="_blank">
+              <i class="material-icons">info</i>
+              Site Info and Methods
+            </a>
+          </li>
         </ul>
         <div id="map"></div>
         <a href="#" data-activates="slide-out" class="button-collapse hide-on-large-only"><i class="material-icons">chevron_right</i></a>
@@ -238,7 +238,7 @@
             </div>
           </div>
         </div>
-        <a href="https://goo.gl/forms/etRt1SYclK6mz8993" class="feedback">Give Feedback</a>
+        <a href="https://goo.gl/forms/etRt1SYclK6mz8993" target="_blank" class="feedback">Feedback</a>
       </div>
     </div>
     <!-- RESULTS MODAL -->
@@ -303,14 +303,14 @@
           </div>
         </div>
         <div class="row">
-          <div class="col s4">
+          <div class="col s4 desc">
               Upload a <code>.csv</code> file of your points. The columns should be in the order: latitude, longitude and class. Where Latitude and Longitude are in WGS84 and class is the ecosystem label.
               It is <b>important</b> that the classes do not have a comma (,) in the label.
           </div>
-          <div class="col s4">
+          <div class="col s4 desc">
             Upload a <code>.json</code> file of your training data, Choose this option if you have previously used REMAP and exported the data as a json.
           </div>
-          <div class="col s4">
+          <div class="col s4 desc">
             Upload a <code>.KML</code> file of your region of interest. If you have a specific region that you have a .KML for you can upload it and the region will clip to it.
           </div>
         </div>
@@ -322,18 +322,74 @@
         </div>
         <div class="row">
           <div class="col s4">
-            <a class="waves-effect waves-light btn" onclick="uploadClick()">Upload CSV<input id="csv" type="file" accept=".csv" tabindex="-1"></a>
+            <a class="more-btn btn" onclick="uploadClick()">Upload CSV<input class="hidden" id="csv" type="file" accept=".csv" tabindex="-1"></a>
           </div>
           <div class="col s4">
-            <a  class="waves-effect waves-light btn" onclick="uploadJSONClick()">Upload JSON<input id="json" type="file" accept=".json" tabindex="-1"></a>
+            <a  class="more-btn btn" onclick="uploadJSONClick()">Upload JSON<input class="hidden" id="json" type="file" accept=".json" tabindex="-1"></a>
           </div>
           <div class="col s4">
-            <a class="waves-effect waves-light btn" onclick="uploadKMLClick()">Upload KML<input id="kml" type="file" accept=".kml" tabindex="-1"></a>
+            <a class="more-btn btn" onclick="uploadKMLClick()">Upload KML<input class="hidden" id="kml" type="file" accept=".kml" tabindex="-1"></a>
           </div>
         </div>
       </div>
     </div>
-
+    <!--  ASSESSMENT MODAL -->
+    <div class="modal" id="assessment-modal">
+      <div class="modal-content">
+        <h4>Assessment</h4>
+        <h5 id="assessment-label"></h5>
+        <div class="divider"></div>
+        <div class="row" id="assessment-loading">
+          <div class="col s12">
+            <h5>Waiting for Assessment metrics...</h5>
+            <span style="text-align: center">This could take a few minutes.</span>
+            <div class="progress">
+              <div class="indeterminate"></div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col s4">
+            <div><h5>Total Area</h5></div>
+          </div>
+          <div class="col s4">
+            <div><h5>EOO</h5></div>
+          </div>
+          <div class="col s4">
+            <div><h5>AOO</h5></div>
+          </div>
+        </div>
+        <div class="row hidden" id="assessment-results-row">
+          <div class="col s4">
+            <div class="assessment-result" id="assessment-area">10 km Squared</div>
+          </div>
+          <div class="col s4">
+            <div class="assessment-result" id="assessment-eoo">24 km Squared</div>
+          </div>
+          <div class="col s4">
+            <div class="assessment-result" id="assessment-aoo">34</div>
+            <div class="assessment-result" id="assessment-aoo-1pc">34</div>
+          </div>
+          
+        </div>
+        <div class="row">
+          <div class="col s4">
+              <div class="desc">The total area of your ecosystem in the image.</div>
+          </div>
+          <div class="col s4">
+              <div class="desc">The area of a minimal convex polygon containing your ecosystem. See the <a href="/faq" target="_blank">FAQ page</a> for more information.</div>
+            
+          </div>
+          <div class="col s4">
+             <div class="desc">
+             We overlay a grid with each grid at 10km by 10km and count the number of squares that the ecosystem of interest occurs in.,
+             AOO 1% is the number of squares where the ecosystem has a total area of more than 1% of the grid (1km square).
+             See the <a href="/faq" target="_blank">FAQ page</a> for more information.
+             </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <template id="classTemplate">
       <li class="classVal">
         <a onclick="selectClass(this)">
@@ -373,7 +429,7 @@
     {% endif %}
     <script type="text/javascript">
       // run the init scripts
-      initialize('{{ oauth }}');
+      initialize('{{ oauth }}', '{{ reload }}');
       initAutocomplete(); // for the search box.
       
       // confirm on page redirect / close

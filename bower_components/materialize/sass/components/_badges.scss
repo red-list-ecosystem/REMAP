@@ -1,7 +1,7 @@
 // Badges
 span.badge {
   min-width: 3rem;
-  padding: 0 6px;
+  padding: 0 3px;
   margin-left: 14px;
   text-align: center;
   font-size: 1rem;
@@ -42,5 +42,5 @@ nav ul a span.badge {
   margin-top: calc(#{$collapsible-line-height / 2} - #{$badge-height / 2});
 }
 .side-nav span.badge {
-  margin-top: calc(#{$sidenav-line-height / 2} - #{$badge-height / 2});
+  margin-top: calc(#{$sidenav-line-height / 3} - #{$badge-height / 2});
 }

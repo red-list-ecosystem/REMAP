@@ -73,9 +73,10 @@ function refreshAssessmentSelect() {
   $('#assessment_select').children().remove()
   classList.forEach( function (x, i) {
     $('#assessment_select').append(
-      $('<option>')
-        .attr('value', i)
-        .text(x.name))
+      $('<option>', {
+        value: i,
+        text: x.name
+      }))
   })
   $('#assessment_select').material_select()
 }

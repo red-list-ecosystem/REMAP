@@ -120,6 +120,7 @@ predictors = [
         "vis": True,
         "ramp":'ffffff,c7d6f7,00057a'
     }
+
 ]
 
 predictor_dict = {}

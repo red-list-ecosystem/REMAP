@@ -9,9 +9,6 @@ handlers:
 - url: /fonts/
   static_dir: static/fonts
   secure: always
-- url: /bower_components/
-  static_dir: bower_components
-  secure: always
 - url: /exportworker
   script: server.app
   secure: always
