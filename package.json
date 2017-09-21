@@ -1,0 +1,32 @@
+{
+  "name": "gee-pipe-app",
+  "version": "1.0.0",
+  "description": "Otherwise known as REMAP",
+  "main": "gulpfile.js",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-minify": "^0.0.15"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "dev_appserver.py app.yaml"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nick-murray/gee-pipe-app.git"
+  },
+  "keywords": [],
+  "author": "John Wilshire, Daniel Simpson, Nick Murray",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nick-murray/gee-pipe-app/issues"
+  },
+  "homepage": "https://github.com/nick-murray/gee-pipe-app#readme",
+  "dependencies": {
+    "gulp-sass": "^3.1.0"
+  },
+  "directories": {
+    "lib": "lib"
+  }
+}

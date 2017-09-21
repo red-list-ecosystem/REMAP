@@ -1,0 +1,125 @@
+{% extends "templates/layout.html" %}
+{% block title %} Frequently Asked Questions | remap: remote ecosystem monitoring & assessment pipeline {% endblock %}
+{% block content %}
+<div id="index-banner" class="parallax-container valign-wrapper">
+  <div class="container">
+    <div class="row center masthead">
+      <h2 class="faq-header">Frequently Asked Questions</h2>
+    </div>
+  </div>
+  <div class="parallax"><img src="/static/images/Murray-23.jpg"></div>
+</div>
+<div class="container">
+  <div class="row">
+    <div class="col s12 m9 l10">
+      <div id="step-1" class="section scrollspy">
+        <h4 class="question">What are map classes?</h4>
+        <p class="answer">To make a map of the landscape remap needs data to train a model called a classifier. Remap uses  data points that identify all of different classes present in the landscape, which are then used to predict across the rest of the landscape. The result is a map where all pixels have been classified into the classes originally presented to remap.</p>
+        <p>We suggest making maps of ecosystems where each class is a single ecosystem type, such as mangrove, salt marsh or a forest type. However, remap will attempt to classify the landscape into any set of classes that you provide as training data, which means you can make maps of deforestation (2 classes: forest and non-forest), land use (3 classes: agriculture, bare land and urban area) or ecosystems (For example, mangrove, salt marsh and sandy beach). In many cases it will be sufficient to simply train the class of interest and have an "other" class to distinguish it from.</p>
+        </p>
+      </div>
+      <div id="step-2" class="section scrollspy">
+        <h4 class="question">What is the largest ecosystem I can map?</h4>
+        <p class="answer">Remap is subject to a range of computational limits when making calls to the Google Earth Engine. Therefore, to ensure we can successfully classify an area we have set a limit to the focal region of 100,000 km^2. If you require maps that are larger than this, we suggest implementing your workflow directly in the <a href="https://earthengine.google.com/">Google Earth Engine</a>. We are actively working to increase this limit, so please let us know if you require a larger focal region using the feedback link.</p>
+      </div>
+      <div id="step-3" class="section scrollspy">
+        <h4 class="question">Remap is not producing accurate maps. What can I do?</h4>
+        <p class="answer">
+          As with all remote sensing classifications, there are a number of choices that can be made to produce the most accurate map classifications. We suggest trying these three steps if you want to produce the most accurate map possible in remap:
+          <ul class="collection">
+            <li class="collection-item">
+            <b>1. Add more training data</b><p>
+              Remap uses a machine learning classification method called Random Forests. This method requires training data (which we call the training set, a set of observations of class occurrence) that are used to train, or teach, the classifier  the most likely class that a pixel belongs to. Therefore, we recommend you develop a fairly large training set (>50 point per class) with the aim of independently sampling all of the map classes you wish the Random Forest to identify across the landscape.
+            </li>
+            <li class="collection-item">
+              <b>2. Modify the predictor set</b><p>
+              When you click classify the classifier aims to predict all of the classes from the set of training observations provided to it. To acheive this, it utilises information from a set of predictors (data layers) to classify each pixel in the focal region. We have provided a default set of biophysical (<a href="https://explorer.earthengine.google.com/#detail/USGS%2FSRTMGL1_003">slope, elevation</a>), spectral (<a href="https://explorer.earthengine.google.com/#detail/LANDSAT%2FLC8_SR">Landsat Archive imagery</a>) and climatic (<a href="https://explorer.earthengine.google.com/#detail/WORLDCLIM%2FV1%2FBIO">precipitation, temperature</a>) predictors that work well across a variety of landscapes. However, it is possible to select predictors that are expected to strongly influence the distribution of particular ecosystems, and tuning remap to work for your ecosystem of interest will improve the classification. For instance, if you are working with a coastal ecosystem sugh as mangroves, slope is likely to be important predictor of their distribution. You can use Select Predictors to ensure slope is included in the classification.
+            </li>
+            <li class="collection-item">
+              <b>3. Add more classes to your training set:</b><p>
+              Remap will classify the landscape only into the classes you provide it. Therefore, in cases where there are many contrasting map classes, it may be necessary to carefully think through the best set of classes that you wish remap to distinguish. For example, if you are interested in mapping mangrove ecosystems, you will get a better classification if you map mangroves, water and land, rather than simply mangrove and other. This is due to the water and land classes being very different classes for the classifier to assign to one single class. This process is also important if you wish to map ecosystems adjacent to urban areas: it will be necessary to make urban a map class so that it can be effectively distinguished from the natural ecosystems in your region.
+            </li>
+          </ul>
+        </p>
+      </div>
+      <div id="step-4" class="section scrollspy">
+        <h4 class="question">What are AOO and EOO?</h4>
+        <p class="answer">From <a href="http://onlinelibrary.wiley.com/doi/10.1111/ddi.12533/abstract">Murray et al (2017)</a>: 
+        <p class="answer">Extent of occurrence (EOO) and area of occupancy (AOO) are two standardized measures of geographic range size used in both IUCN red list criteria. Neither AOO nor EOO is intended to be a precise estimate of total area in which a species or ecosystem occurs. Rather, in risk assessment protocols such as the IUCN red lists they function as standardized, complementary and widely applicable measures of risk-spreading against spatially explicit threats.
+        <p class="answer">EOO is measured by a minimum convex polygon encompassing all known occurrences of a species or ecosystem. 
+        <p class="answer">AOO is an index related to total occupied area, estimated by summing the areas of grid cells of a standard size (~2×2 km for species and 10×10 km for ecosystems. 
+        <p class="answer">Refer to the <a href="https://portals.iucn.org/library/node/45794 ">IUCN Red List of Ecosystems guidelines</a> for further information about EOO and AOO.
+      </div>
+      <div id="step-5" class="section scrollspy">
+        <h4 class="question">I cannot upload my .csv training set, what can I do?</h4>
+        <p class="answer">If your .csv file with training points is not being recognised by remap, you can try a couple of different things:
+          <ul class="collection">
+            <li class="collection-item">
+              1. Ensure the columns in your .csv file of training data are in our standard format. This requires that your columns have the header names <code>latitude, longitude, label</code> in the same order (<code>latitude, longitude, label</code>). 
+            </li>
+            <li class="collection-item">
+              2. Ensure sure your class names (labels), don't have a comma in them.. Safest is to use simple and informative names such as <code>Boreal Forest</code> or <code>Wet Schlerophyll Forests</code>
+            </li>
+             <li class="collection-item">
+              3. Ensure sure your coordinates are in <code>WGS84</code> and use <code>.</code> and not <code>,</code> as a decimal point. For example, a single point should have the format <code>-34.1524, 151.0259, Wet Schlerophyll Forests</code>.
+            </li>
+             <li class="collection-item">
+              4. Ensure each training point is a separate row in your training set .csv.
+            </li>
+            <li class="collection-item">
+              5. If your .csv file does have any of these issues, you can open it spreadsheet software (e.g. Excel) to fix any other issues there.
+            </li>
+          </ul>
+        </p>
+      </div>
+      <div id="step-6" class="section scrollspy">
+        <h4 class="question">How can I save my data/project?</h4>
+        <p class="answer">Remap allows you to save your current workspace so that you can quickly and easily return to work:
+          <ul class="collection">
+            <li class="collection-item">
+              1. Before navigating away from remap, go to <code>7. Export Data</code> and select <code>Download JSON</code>. 
+            </li>
+            <li class="collection-item">
+              2. When you're ready to start work again simply <code>2. Build Training Set</code>, select <code>Upload Data</code> and <code>Upload JSON</code>. Remap will automatically zoom to your region, import your previous training points and you can resume your workflow. 
+            </li>
+          </ul>
+        </p>
+      </div>
+
+      <div id="step-7" class="section scrollspy">
+        <h4 class="question">What is satellite remote sensing?</h4>
+        <p class="answer">  <p> Satellites have been imaging the earth for around 50 years. In that time they have been instrumental in identifying large, detrimental changes to ecosystems. Indeed, the trajectories of many of Earth’s major ecosystem types, such as the –3.7% annual decrease in the extent of tropical peatlands, –2% annual decline of coastal wetlands in East Asia and the >1% net annual change of forests globally were quantified with large-scale remote sensing analyses of satellite data. </p>
+        <p> The basis of all of these observations of ecosystem loss and change has been accurate maps of ecosystem distributions. Maps of ecosystems may be developed from a range of sources, but the use of satellites such as Landsat have allowed long-term changes (nearly up to 50 years) to be detected. </p>
+        <p>In remap, we use Landsat satellites and a range of other datasets to develop accurate maps of ecosystem distributions. Our classification methods, which utilise machine learning to rapidly and accurately classify satellite image pixels, are proven to work for a range of ecosystem types.</p>
+      </div>
+
+      <div id="step-8" class="section scrollspy">
+        <h4 class="question">What is the IUCN Red List of Ecosystems?</h4>
+        <p class="answer">The <a href="http://www.iucnrle.org/">IUCN Red List of Ecosystems</a> identifies ecosystems as Critically Endangered, Endangered, Vulnerable or Least Concern. Together, the Red Lists for species and ecosystems will provide a more comprehensive view of the status of the environment and its biodiversity than either can on its own. Find out more about the IUCN Red List of Ecosystems: <a href="http://www.iucnrle.org/">www.iucnrle.org</a> </p>
+      </div>
+      <div id="step-9" class="section scrollspy">
+        <h4 class="question">How can I support Remap?</h4>
+        <p class="answer">Remap was developed with funding from a <a href="https://earthengine.google.com/">Google Earth Engine</a> research award. We appreciate feedback to help further develop Remap into a tool that helps assess and conserve ecosystems across the world.</p>
+      </div>
+
+
+    </div>
+    <div class="col hide-on-small-only m3 l2">
+      <div class="toc-wrapper" id="faq-toc">
+        <ul class="section table-of-contents">
+          <li><a href="#step-1">Map classes</a></li>
+          <li><a href="#step-2">Size limits</a></li>
+          <li><a href="#step-3">Classification accuracy</a></li>
+          <li><a href="#step-4">AOO and EOO?</a></li>
+          <li><a href="#step-5">Data upload issues</a></li>
+          <li><a href="#step-6">Saving your data</a></li>
+          <li><a href="#step-7">Satellite remote sensing</a></li>
+          <li><a href="#step-8">IUCN Red List of Ecosystems</a></li>
+          <li><a href="#step-9">Support Remap</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div> 
+
+{% endblock %}
