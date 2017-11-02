@@ -4,7 +4,7 @@
 Remap is an online mapping platform for people with little technical background in remote sensing. We developed remap to enable you to quickly map and report the status of ecosystems, contributing to a global effort to assess all ecosystems on Earth under the IUCN Red List of Ecosystems.
 
 The general workflow of Remap is:
-
+![alt tag](https://github.com/REMAPApp/REMAP/blob/master/static/images/WorkFlow-01.png)
 
 ### Setup / Install
 Follow the instructions found on: [Earth engine apps](https://developers.google.com/earth-engine/app_engine_intro).
