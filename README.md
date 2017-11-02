@@ -22,7 +22,7 @@ The [REMAP app] (https://remap-app.org/) was developed with funding from a Googl
 ### To cite REMAP:
 Murray, N.J., Keith, D.A., Simpson, D., Wilshire, J.H. & Lucas, R.M. (2017) REMAP: An online remote sensing application for land cover classification and monitoring. bioRxiv. DOI: [10.1101/212464](https://www.biorxiv.org/content/early/2017/11/01/212464)
 
-## Acknowledgements
+### Acknowledgements
 Remap uses:
 * Google Earth Engine
 * Google App Engine
