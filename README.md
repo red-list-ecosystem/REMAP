@@ -1,7 +1,7 @@
 # REMAP: Remote Ecosystem Mapping and Assessment Pipeline
 
 ### About
-Remap is an online mapping platform for people with little technical background in remote sensing. We developed remap to enable you to quickly map and report the status of ecosystems, contributing to a global effort to assess all ecosystems on Earth under the IUCN Red List of Ecosystems.
+Remap (https://remap-app.org/) is an online mapping platform for people with little technical background in remote sensing. We developed remap to enable you to quickly map and report the status of ecosystems, contributing to a global effort to assess all ecosystems on Earth under the IUCN Red List of Ecosystems.
 
 The general workflow of Remap is:
 ![alt tag](https://github.com/REMAPApp/REMAP/blob/master/static/images/WorkFlow-01.png)
