@@ -1,0 +1,3 @@
+[console_scripts]
+earthengine = ee.cli.eecli:main
+

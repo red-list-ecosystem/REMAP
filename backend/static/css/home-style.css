@@ -1,0 +1,163 @@
+parallax-container {
+    min-height: 380px;
+    opacity: 0.5;
+}
+/* sticky footer*/
+
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+main {
+    flex: 1 0 auto;
+}
+p {
+    font-size: 18px;
+    font-weight: 300;
+}
+
+/* navbar */
+.brand-logo > img {
+    max-height: 100%;
+    width: 100%;
+    display: none;
+    visibility: hidden;
+    vertical-align: middle;
+    padding: 0 0.1em;
+}
+
+.collection.avatar,
+.collection-item.avatar,
+.collection.borderless,
+.collection-item.borderless {
+    border-style: none;
+}
+
+.launch-btn {
+    background-color: #cc1417;
+}
+
+.funding {
+    padding: 3rem 0;
+}
+
+.lnr-menu {
+    color: #fff;
+    font-size: 2em;
+    padding-top: 0.5em;
+    position: absolute;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/*  Masthead */
+.masthead > h1 {
+    font-size: 6rem;
+    margin-bottom: 0.1em;
+}
+.masthead > h5 {
+    font-size: 2rem;
+}
+.github-commit {
+    background-color: #000;
+    color: #ccc;
+    padding: 0.2em;
+    border-radius: 0.5em;
+    opacity: .7;
+}
+.github-commit:hover {
+    color: #fff;
+}
+/* Three section */
+.three-section {
+    padding: 2em 4em;
+    text-align: center;
+}
+/* three-icon colour is in the sass for material icons*/
+.three-icon {
+    font-size: 1.5em;
+}
+.icon-block {
+    padding: 0 1.5em;
+    opacity: .9;
+}
+
+.more-btn {
+    opacity: .7;
+    color: #000;
+    background-color: #fff;
+    line-height: 3em;
+    height: auto;
+}
+.more-btn:hover {
+    color: #fff;
+    opacity: 1;
+}
+.more-btn > span {
+    padding-left: 1em;
+}
+.header {
+    font-weight: 300;
+}
+
+.small-desc {
+    line-height: 1.8em;
+    padding: 1em;
+    font-size: 18px;
+    font-weight: 300;
+}
+
+.light {
+    font-size: 18px;
+}
+
+/* Tutorial wrapper */
+.small-indent {
+    padding-left: 0.5em !important;
+}
+
+.toc-wrapper {
+    position: relative;
+    top: 1px;
+}
+.faq-header {
+    text-align: center;
+    padding: 1em;
+    color: #FFF;
+}
+.faq-icon {
+    display: inline-block;
+    font-size: 1.5em;
+    padding: 1em; 
+}
+.privacy, .faq {
+    padding: 4em 0;
+}
+
+.footer-logo, .footer-sub-logo {
+    color: #FFF;
+}
+.footer-logo {
+    font-weight: 200;
+    display: block;
+    font-size: 2em;
+}
+
+.footer-sub-logo {
+    font-size: 1em;
+}
+
+.material-icons {
+    font-size: 15px;
+    opacity: 0.6;
+}
+
+@media only screen and (max-width: 993px) {
+    .three-section {
+        padding: 2em 0;
+    }
+    .icon-block {
+        padding: 0.5em 0;
+    }
+}

@@ -1,0 +1,130 @@
+{% extends "templates/layout.html" %} {% block title %} About | remap: remote ecosystem monitoring & assessment pipeline
+{% endblock %} {% block content %}
+<div id="index-banner" class="parallax-container valign-wrapper">
+  <div class="container">
+    <div class="row center masthead">
+      <h1 class="header white-text">About</h1>
+    </div>
+  </div>
+  <div class="parallax">
+    <img src="/static/images/Murray-23.jpg">
+  </div>
+</div>
+<div class="container content">
+  <p>
+    Remap is an online mapping platform for people with little technical background in remote sensing. We developed remap to
+    enable you to quickly map and report the status of ecosystems, contributing to a global effort to assess all ecosystems
+    on Earth under the
+    <a href="http://iucnrle.org/">IUCN Red List of Ecosystems</a>.
+  </p>
+  <p>
+    Remap uses the power of the
+    <a href="https://earthengine.google.com/">Google Earth Engine</a>, allowing you to directly access vast satellite data archives and state-of-the-art remote sensing
+    methods. Remap handles the technical details of remote sensing so that you can focus on training, classifying and improving
+    your maps.
+  </p>
+
+  <p>
+    Remap was developed through a collaboration between the
+    <a href="http://iucnrle.org/">IUCN Red List of Ecosystems</a> global team and the
+    <a href="https://www.ecosystem.unsw.edu.au/">UNSW Centre of Ecosystem Science</a>. Our team includes ecosystem scientists with extensive research experience in large-area
+    remote sensing, ecosystem dynamics monitoring and biodiversity risk assessment.
+  </p>
+
+  <p>
+    Read our
+    <a href="https://doi.org/10.1101/212464">paper</a> for more information.
+  </p>
+  <p> To cite remap:</p>
+  <div style="border:none;">
+    <ul>
+      <li>
+        <span class="title">{{ citation }}</span>
+      </li>
+    </ul>
+  </div>
+
+  <h4>Project team</h4>
+  <div style="border:none;">
+    <ul class="collection avatar">
+
+      <li class="collection-item avatar">
+        <img src="/static/images/ShyAlbatross.jpg" alt="" class="circle">
+        <span class="title">Dr Nicholas Murray</span>
+        <p>Project Lead,
+          <a href="https://www.ecosystem.unsw.edu.au/">UNSW Centre of Ecosystem Science</a>
+          <br>
+        </p>
+      </li>
+
+      <li class="collection-item avatar">
+        <img src="/static/images/Caracara.jpg" alt="" class="circle">
+        <span class="title">Prof David Keith</span>
+        <p>Professor of Botany,
+          <a href="https://www.ecosystem.unsw.edu.au/">UNSW Centre of Ecosystem Science</a>
+          <br>
+        </p>
+      </li>
+
+      <li class="collection-item avatar">
+        <img src="/static/images/GentooPenguin.jpg" alt="" class="circle">
+        <span class="title">Prof Richard Lucas</span>
+        <p>Professor of Remote Sensing,
+          <a href="https://www.ecosystem.unsw.edu.au/">UNSW Centre of Ecosystem Science</a>
+          <br>
+        </p>
+      </li>
+
+      <li class="collection-item avatar">
+        <img src="/static/images/YellowEyedPenguin.jpg" alt="" class="circle">
+        <span class="title">John Wilshire</span>
+        <p>Developer,
+          <a href="https://www.ecosystem.unsw.edu.au/">UNSW Centre of Ecosystem Science</a>
+          <br>
+        </p>
+      </li>
+
+      <li class="collection-item avatar">
+        <img src="/static/images/CurlewSand.jpg" alt="" class="circle">
+        <span class="title">Daniel Simpson</span>
+        <p>Developer,
+          <a href="https://www.ecosystem.unsw.edu.au/">UNSW Centre of Ecosystem Science</a>
+          <br>
+        </p>
+      </li>
+
+    </ul>
+
+    <h4>Developers</h4>
+    <ul class="collection avatar">
+
+      <li class="collection-item avatar">
+        <img src="/static/images/YellowEyedPenguin.jpg" alt="" class="circle">
+        <span class="title">John Wilshire</span>
+        <p>Developer,
+          <a href="https://www.ecosystem.unsw.edu.au/">UNSW Centre of Ecosystem Science</a>
+          <br>
+        </p>
+      </li>
+
+      <li class="collection-item avatar">
+        <img src="/static/images/CurlewSand.jpg" alt="" class="circle">
+        <span class="title">Daniel Simpson</span>
+        <p>Developer,
+          <a href="https://www.ecosystem.unsw.edu.au/">UNSW Centre of Ecosystem Science</a>
+          <br>
+        </p>
+      </li>
+
+      <li class="collection-item avatar">
+        <img src="/static/images/ShyAlbatross.jpg" alt="" class="circle">
+        <span class="title">Dr Nicholas Murray</span>
+        <p>Project Lead,
+          <a href="https://www.ecosystem.unsw.edu.au/">UNSW Centre of Ecosystem Science</a>
+          <br>
+        </p>
+      </li>
+    </ul>
+  </div>
+</div>
+{% endblock %}

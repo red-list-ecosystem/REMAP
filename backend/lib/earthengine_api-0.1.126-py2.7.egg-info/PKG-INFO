@@ -1,0 +1,26 @@
+Metadata-Version: 1.1
+Name: earthengine-api
+Version: 0.1.126
+Summary: Earth Engine Python API
+Home-page: http://code.google.com/p/earthengine-api/
+Author: Noel Gorelick
+Author-email: gorelick@google.com
+License: UNKNOWN
+Description: =======================
+        Earth Engine Python API
+        =======================
+        This package allows developers to interact with Google Earth Engine using the
+        Python programming language.
+        
+Keywords: earth engine image analysis
+Platform: UNKNOWN
+Classifier: Programming Language :: Python
+Classifier: Operating System :: OS Independent
+Classifier: Development Status :: 2 - Pre-Alpha
+Classifier: Intended Audience :: Science/Research
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Topic :: Multimedia :: Graphics :: Viewers
+Classifier: Topic :: Scientific/Engineering :: GIS
+Classifier: Topic :: Scientific/Engineering :: Visualization
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
