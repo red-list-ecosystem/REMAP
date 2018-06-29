@@ -12,19 +12,25 @@
   modal-upload
   modal-assessment
   modal-results
+  modal-help
+  v-dialog
   loader
 </template>
 
 <script>
-import Loader from './components/Loader'
-import GMap from './components/GMap'
-import ModalAssessment from './components/ModalAssessment'
-import ModalClass from './components/ModalClass'
-import ModalResults from './components/ModalResults'
-import ModalUpload from './components/ModalUpload'
-import Sidebar from './components/Sidebar'
 import store from './store'
 import { mapActions } from 'vuex'
+
+import Sidebar from './components/Sidebar'
+import GMap from './components/GMap'
+import Loader from './components/Loader'
+
+import ModalAssessment from './components/modals/ModalAssessment'
+import ModalClass from './components/modals/ModalClass'
+import ModalResults from './components/modals/ModalResults'
+import ModalUpload from './components/modals/ModalUpload'
+import ModalHelp from './components/modals/ModalHelp'
+
 export default {
   name: 'app',
   components: {
@@ -33,11 +39,12 @@ export default {
     ModalAssessment,
     ModalClass,
     ModalResults,
+    ModalHelp,
     ModalUpload,
     Sidebar
   },
   store,
-  methods: mapActions(['setPredictors']),
+  methods: mapActions(['setPredictors', 'setCitation']),
   mounted () {
     this.$http.get('/api/config').then(data => {
       if (!data.body.debug) {
@@ -49,6 +56,7 @@ export default {
         console.log('Running remap in debug mode.')
       }
       this.setPredictors(data.body.predictors)
+      this.setCitation(data.body.citation)
     })
   }
 }

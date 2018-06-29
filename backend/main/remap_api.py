@@ -13,9 +13,10 @@ class GetMapData(BaseHandler):
     def dispatch(self):
         self.layers = []
         try:
+            # just to check if the data property already exists
+            self.data
+        except AttributeError:
             self.data = json.loads(self.request.body)
-        except:
-            self.data = json.loads(self.request.get('data'))
 
         self.region = self.get_region(self.data)
 
@@ -31,7 +32,7 @@ class GetMapData(BaseHandler):
         if 'past' in self.data:
             self.past = self.data['past']
 
-        # We are doing something that invovles a classification:
+        # We are doing something that involves a classification:
         if 'classList' in self.data:
             self.classes = self.data['classList']
 
@@ -42,8 +43,8 @@ class GetMapData(BaseHandler):
                 }))
                 return
             if self.too_many_points(self.classes):
-                logging.error('Too many traning points, requested points: %d.' % sum(
-                    [len(label['points']) for label in classes]))
+                logging.error('Too many training points, requested points: %d.' % sum(
+                    [len(label['points']) for label in self.classes]))
                 self.response.set_status(422)
                 self.response.write(json.dumps({
                     "message": "The total number of training points cannot exceed %s." % config.MAX_POINTS
@@ -78,8 +79,6 @@ class GetMapData(BaseHandler):
         return min([len(label['points']) for label in classes]) < 1
 
     def too_many_points(self, classes):
-        """ This is so the 
-        """
         return sum([len(label['points']) for label in classes]) > config.MAX_POINTS
 
     def get_train(self, classes):
@@ -138,6 +137,17 @@ class GetPerformance(GetMapData):
         }
         return self.response.write(json.dumps(resp))
 
+class GetDownloadURL(GetMapData):
+    def post(self):
+        classified = remap.get_classified_from_fc(
+            self.train_fc, self.predictors, self.past).clip(self.region)
+        region = self.region.getInfo()
+        url = classified.getDownloadURL({
+            'name': 'export',
+            'scale':30,
+            'region': json.dumps(region)
+        })
+        return self.response.write(json.dumps({'url': url}))
 
 class GetPredictorLayer(GetMapData):
     def post(self):
@@ -201,7 +211,6 @@ class GetPredictorLayer(GetMapData):
             'max': stats['mean'] + sigma * stats['total_sd'],
         }, stats['mean'], stats['total_sd']
 
-
 class AOO(GetMapData):
     def post(self):
         selected = int(self.data['selected'])
@@ -215,7 +224,6 @@ class AOO(GetMapData):
         results['selected'] = selected
 
         return self.response.write(json.dumps(results))
-
 
 class EOO(GetMapData):
     def post(self):

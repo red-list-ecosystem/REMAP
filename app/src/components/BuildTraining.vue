@@ -82,6 +82,8 @@
   }
   .className {
     margin-right: auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .classNum {
     background: #333333;
@@ -103,6 +105,7 @@
   .legend-colour {
     float: left;
     width: 27px;
+    min-width: 27px;
     height: 27px;
     border: 1px solid rgba(0, 0, 0, .2);
     margin: 4px 7px 4px 0px;

@@ -26,6 +26,9 @@
         md-spinner(:md-size='20', md-indeterminate, v-if="exportStatus === 'IN_PROGRESS'")
         md-icon#gtick(v-if="exportStatus === 'COMPLETED'") done
         md-icon#gcross(v-if="exportStatus === 'ERROR'") clear
+      md-list-item(@click='downloadURL')
+        md-icon cloud_download
+        span Direct Download
       md-list-item(v-if='authReady && isSignedIn', @click='preSignOut')
         md-icon
           img(src='../assets/g-logo.png')
@@ -34,6 +37,7 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
+import doDownload from './doDownload'
 import store from '../store'
 export default {
   name: 'export',
@@ -82,22 +86,6 @@ export default {
         this.authReady = true
       })
     },
-    doDownload (fileName, blob) {
-      var reader = new FileReader()
-      reader.onload = function (e) {
-        if (window.navigator.msSaveOrOpenBlob) {
-          navigator.msSaveBlob(blob, fileName)
-        } else {
-          var downloadLink = document.createElement('a')
-          downloadLink.href = window.URL.createObjectURL(blob)
-          downloadLink.download = fileName
-          document.body.appendChild(downloadLink)
-          downloadLink.click()
-          downloadLink.remove()
-        }
-      }
-      reader.readAsDataURL(blob)
-    },
     downloadCSV () {
       var output = []
       output.push('lat,lng,label')
@@ -111,7 +99,18 @@ export default {
         return
       }
       var blob = new Blob([output.join('\n')], { type: 'text/csv' })
-      this.doDownload('remap_points.csv', blob)
+      doDownload('remap_points.csv', blob)
+    },
+    downloadURL () {
+      this.$http.post('/api/download', this.mapData()).then(data => {
+        const body = data.body
+        var downloadLink = document.createElement('a')
+        downloadLink.href = body.url
+        downloadLink.download = 'remap_export'
+        document.body.appendChild(downloadLink)
+        downloadLink.click()
+        downloadLink.remove()
+      })
     },
     downloadDrive () {
       this.exportReady = false
@@ -126,34 +125,33 @@ export default {
     },
     downloadJSON () {
       var blob = new Blob([this.json()], { type: 'application/json' })
-      this.doDownload('remap_training.json', blob)
+      doDownload('remap_training.json', blob)
     },
     poll () {
-      var vm = this
-      vm.$http.get('/api/exportstatus')
+      this.$http.get('/api/exportstatus')
         .catch(err => {
           console.error('polling error')
           console.error(err)
-          setTimeout(vm.poll, 10000)
+          setTimeout(this.poll, 10000)
         })
         .then(response => {
-          vm.exportStatus = response.body
+          this.exportStatus = response.body
           console.log(`polling result ${response.body}`)
-          if (vm.exportStatus === 'IN_PROGRESS') {
-            setTimeout(vm.poll, 10000)
+          if (this.exportStatus === 'IN_PROGRESS') {
+            setTimeout(this.poll, 10000)
           } else {
-            if (vm.exportStatus === 'ERROR') {
-              vm.$toasted('Error downloading from Drive.', { duration: 5000 })
-            } else if (vm.exportStatus === 'COMPLETED') {
-              vm.$toasted('Drive download completed!', { duration: 5000 })
-            } else if (vm.exportStatus === 'NOT_STARTED') {
-              vm.$toasted('Drive download did not start.', { duration: 5000 })
+            if (this.exportStatus === 'ERROR') {
+              this.$toasted.show('Error downloading from Drive.', { duration: 5000 })
+            } else if (this.exportStatus === 'COMPLETED') {
+              this.$toasted.show('Drive download completed!', { duration: 5000 })
+            } else if (this.exportStatus === 'NOT_STARTED') {
+              this.$toasted.show('Drive download did not start.', { duration: 5000 })
             } else {
               // should never be reached
-              vm.$toasted('Sorry, something went wrong (' + vm.exportStatus + ').', { duration: 5000 })
+              this.$toasted.show('Sorry, something went wrong (' + this.exportStatus + ').', { duration: 5000 })
             }
 
-            vm.exportReady = true
+            this.exportReady = true
           }
         })
     },
@@ -170,6 +168,11 @@ export default {
               console.error(err)
               this.signOut()
             })
+        }
+      }, err => {
+        if (err.error !== 'popup_closed_by_user') {
+          // what other errors can occur? how do we handle this?
+          throw err
         }
       })
     },

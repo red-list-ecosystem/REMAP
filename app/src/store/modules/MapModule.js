@@ -19,6 +19,7 @@ export default {
   },
   actions: {
     addMapLayer: ({ commit }, layer) => commit('addMapLayer', layer),
+    deleteMapLayer: ({ commit }, layerIDX) => commit('deleteMapLayer', layerIDX),
     initRegion: ({ commit }) => commit('initRegion'),
     setBounds: ({ commit }, bounds) => commit('setBounds', bounds),
     setRegion: ({ commit }, rgn) => commit('setRegion', rgn),
@@ -40,6 +41,11 @@ export default {
           state.mapLayers.splice(1, 1) // remove the second last classification
         }
         state.mapLayers.push(layer)
+      }
+    },
+    deleteMapLayer (state, layerIDX) {
+      if (layerIDX !== 0 && layerIDX < state.mapLayers.length) {
+        state.mapLayers.splice(layerIDX, 1)
       }
     },
     initRegion (state) {

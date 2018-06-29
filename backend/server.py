@@ -82,14 +82,15 @@ class Config(BaseHandler):
         self.response.out.write(json.dumps({
             'max_area': config.AREA_THRESHOLD,
             'debug': config.DEBUG,
-            'predictors': remap.predictors
+            'predictors': remap.predictors,
+            'citation': config.CITATION
         }))
 
 
 def handle_error(request, response, exception):
     """ Sends the error for post requests back to the client in json format
     """
-    logging.error(exception.message)
+    logging.error(exception)
 
     if request.method == "POST":
         response.headers.add_header('Content-Type', 'application/json')
@@ -116,6 +117,7 @@ app = webapp2.WSGIApplication([
     # api endpoints
     ('/api/map', GetMapData),
     ('/api/performance', GetPerformance),
+    ('/api/download', GetDownloadURL),
     ('/api/assessment/aoo', AOO),
     ('/api/assessment/eoo', EOO),
     ('/api/config', Config),

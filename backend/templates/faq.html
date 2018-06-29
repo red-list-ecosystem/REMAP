@@ -12,110 +12,199 @@
 <div class="container">
   <div class="row">
     <div class="col s12 m9 l10">
+
       <div id="step-1" class="section scrollspy">
-        <h4 class="question">What are map classes?</h4>
-        <p class="answer">To make a map of the landscape remap needs data to train a model called a classifier. Remap uses  data points that identify all of different classes present in the landscape, which are then used to predict across the rest of the landscape. The result is a map where all pixels have been classified into the classes originally presented to remap.</p>
-        <p>We suggest making maps of ecosystems where each class is a single ecosystem type, such as mangrove, salt marsh or a forest type. However, remap will attempt to classify the landscape into any set of classes that you provide as training data, which means you can make maps of deforestation (2 classes: forest and non-forest), land use (3 classes: agriculture, bare land and urban area) or ecosystems (For example, mangrove, salt marsh and sandy beach). In many cases it will be sufficient to simply train the class of interest and have an "other" class to distinguish it from.</p>
+        <h4 class="question">How should I define my map classes?</h4>
+        <p class="answer">To make a classified map remap requires data to train a statistical model called a classifier. Remap uses training points that identify all of the different classes present in the landscape, which it uses to predict across the rest of the landscape. The result is a map where all pixels have been classified into the classes defined by the training set. The classes can be land cover types, such as specific ecosystems (mangrove, forest), forest cover (forest and non-forest), or land uses (agriculture, bare land and urban area).</p>
         </p>
       </div>
+
       <div id="step-2" class="section scrollspy">
-        <h4 class="question">What is the largest ecosystem I can map?</h4>
-        <p class="answer">Remap is subject to a range of computational limits when making calls to the Google Earth Engine. Therefore, to ensure we can successfully classify an area we have set a limit to the focal region of 100,000 km^2. If you require maps that are larger than this, we suggest implementing your workflow directly in the <a href="https://earthengine.google.com/">Google Earth Engine</a>. We are actively working to increase this limit, so please let us know if you require a larger focal region using the feedback link.</p>
+        <h4 class="question">Does remap require a fast internet connection?</h4>
+        <p class="answer">  <p>Any internet connection capable of loading Google Maps will be sufficient to use remap.  </p>
       </div>
+
       <div id="step-3" class="section scrollspy">
-        <h4 class="question">Remap is not producing accurate maps. What can I do?</h4>
-        <p class="answer">
-          As with all remote sensing classifications, there are a number of choices that can be made to produce the most accurate map classifications. We suggest trying these three steps if you want to produce the most accurate map possible in remap:
-          <ul class="collection">
-            <li class="collection-item">
-            <b>1. Add more training data</b><p>
-              Remap uses a machine learning classification method called Random Forests. This method requires training data (which we call the training set, a set of observations of class occurrence) that are used to train, or teach, the classifier  the most likely class that a pixel belongs to. Therefore, we recommend you develop a fairly large training set (>50 point per class) with the aim of independently sampling all of the map classes you wish the Random Forest to identify across the landscape.
-            </li>
-            <li class="collection-item">
-              <b>2. Modify the predictor set</b><p>
-              When you click classify the classifier aims to predict all of the classes from the set of training observations provided to it. To acheive this, it utilises information from a set of predictors (data layers) to classify each pixel in the focal region. We have provided a default set of biophysical (<a href="https://explorer.earthengine.google.com/#detail/USGS%2FSRTMGL1_003">slope, elevation</a>), spectral (<a href="https://explorer.earthengine.google.com/#detail/LANDSAT%2FLC8_SR">Landsat Archive imagery</a>) and climatic (<a href="https://explorer.earthengine.google.com/#detail/WORLDCLIM%2FV1%2FBIO">precipitation, temperature</a>) predictors that work well across a variety of landscapes. However, it is possible to select predictors that are expected to strongly influence the distribution of particular ecosystems, and tuning remap to work for your ecosystem of interest will improve the classification. For instance, if you are working with a coastal ecosystem sugh as mangroves, slope is likely to be important predictor of their distribution. You can use Select Predictors to ensure slope is included in the classification.
-            </li>
-            <li class="collection-item">
-              <b>3. Add more classes to your training set:</b><p>
-              Remap will classify the landscape only into the classes you provide it. Therefore, in cases where there are many contrasting map classes, it may be necessary to carefully think through the best set of classes that you wish remap to distinguish. For example, if you are interested in mapping mangrove ecosystems, you will get a better classification if you map mangroves, water and land, rather than simply mangrove and other. This is due to the water and land classes being very different classes for the classifier to assign to one single class. This process is also important if you wish to map ecosystems adjacent to urban areas: it will be necessary to make urban a map class so that it can be effectively distinguished from the natural ecosystems in your region.
-            </li>
-          </ul>
-        </p>
+        <h4 class="question">What is the largest map I can make in remap?</h4>
+        <p class="answer">Remap is subject to computational limits when running its classification on Google Earth Engine. Therefore, we have set a limit to the focal region of 100,000 km<sup>2</sup>. If you require maps that are larger than this, we suggest implementing your workflow directly in the <a href="https://earthengine.google.com/">Google Earth Engine</a>.</p>
       </div>
+
+      <div id="step-3" class="section scrollspy">
+        <h4 class="question">What is the smallest map I can make in remap?</h4>
+        <p class="answer"> Remap produces classied maps at the Landsat scale (~30m). Individual features on the earth's surface such as trees or small buildings may not be detectable at this scale, so we recommend working with focal region than about one square kilometre. </p>
+      </div>
+
       <div id="step-4" class="section scrollspy">
-        <h4 class="question">What are AOO and EOO?</h4>
-        <p class="answer">From <a href="http://onlinelibrary.wiley.com/doi/10.1111/ddi.12533/abstract">Murray et al (2017)</a>: 
-        <p class="answer">Extent of occurrence (EOO) and area of occupancy (AOO) are two standardized measures of geographic range size used in both IUCN red list criteria. Neither AOO nor EOO is intended to be a precise estimate of total area in which a species or ecosystem occurs. Rather, in risk assessment protocols such as the IUCN red lists they function as standardized, complementary and widely applicable measures of risk-spreading against spatially explicit threats.
-        <p class="answer">EOO is measured by a minimum convex polygon encompassing all known occurrences of a species or ecosystem. 
-        <p class="answer">AOO is an index related to total occupied area, estimated by summing the areas of grid cells of a standard size (~2×2 km for species and 10×10 km for ecosystems. 
-        <p class="answer">Refer to the <a href="https://portals.iucn.org/library/node/45794 ">IUCN Red List of Ecosystems guidelines</a> for further information about EOO and AOO.
+        <h4 class="question">Can I classify the base high-resolution imagery?</h4>
+        <p class="answer">No. Remap analyses free and open data and the base imagery does not meet these conditions. All classifications in remap use freely available Landsat imagery provided by the USGS. We allow viewing of the high resolution imagery because it can be very useful for developing accurate training sets. </p>
       </div>
+
+      <div id="step-5" class="section scrollspy">
+        <h4 class="question">Can I upload complex .kml files for my focal region?</h4>
+        <p class="answer">  <p> Remap uses the region of interest to contain the classification procedure. It is not possible to do this with more than one polygon. </p>
+      </div>
+
+      <div id="step-5" class="section scrollspy">
+        <h4 class="question">Can I upload my own predictor imagery, such as drone data?</h4>
+        <p class="answer">  <p> No. For custom analyses use <a href="https://earthengine.google.com/">Google Earth Engine</a>. </p>
+      </div>
+
       <div id="step-5" class="section scrollspy">
         <h4 class="question">I cannot upload my .csv training set, what can I do?</h4>
-        <p class="answer">If your .csv file with training points is not being recognised by remap, you can try a couple of different things:
+        <p class="answer">If your .csv file with training points is not being recognised by remap, try:
           <ul class="collection">
             <li class="collection-item">
-              1. Ensure the columns in your .csv file of training data are in our standard format. This requires that your columns have the header names <code>latitude, longitude, label</code> in the same order (<code>latitude, longitude, label</code>). 
+              1. Ensure the columns in the .csv file of training data are in our standard format. Your columns must have the header names <code>latitude, longitude, label</code> in the same order (<code>latitude, longitude, label</code>). 
             </li>
             <li class="collection-item">
-              2. Ensure sure your class names (labels), don't have a comma in them.. Safest is to use simple and informative names such as <code>Boreal Forest</code> or <code>Wet Schlerophyll Forests</code>
+              2. Ensure the class names (labels), don't have a comma in them. Safest is to use simple and informative names such as <code>Boreal Forest</code> or <code>Wet Schlerophyll Forest</code>
             </li>
              <li class="collection-item">
-              3. Ensure sure your coordinates are in <code>WGS84</code> and use <code>.</code> and not <code>,</code> as a decimal point. For example, a single point should have the format <code>-34.1524, 151.0259, Wet Schlerophyll Forests</code>.
+              3. Ensure the coordinates are in <code>WGS84</code>, and use <code>.</code> not <code>,</code> as the decimal point. A single point should have the format <code>-34.1524, 151.0259, Wet Schlerophyll Forests</code>.
             </li>
              <li class="collection-item">
-              4. Ensure each training point is a separate row in your training set .csv.
+              4. Ensure each training point is a separate row in the .csv file.
             </li>
             <li class="collection-item">
-              5. If your .csv file does have any of these issues, you can open it spreadsheet software (e.g. Excel) to fix any other issues there.
+              5. If the .csv file does have any of these issues, you can open it spreadsheet software (e.g. Excel) to fix any other issues there.
+            </li>
+          </ul>
+        </p>
+      </div> 
+
+      <div id="step-6" class="section scrollspy">
+        <h4 class="question">How can I download the geotiff of my classified map?</h4>
+        <p class="answer">Remap offers two different ways to download your results in a spatially rectified raster format (.tif):
+          <ul class="collection">
+            <li class="collection-item">
+              1. Use the <code>Direct Download</code> button to download a .zip file with your .tif and a metadata file for your classification. This option can become unreliable with very big downloads, so we recommend using the next method for large classifications.
+            </li>
+            <li class="collection-item">
+              2. Use the <code>Drive export geotiff</code> function to download directly to your drive. You will need to first sign into your Google account. Following a period of up to 24 hours, depending on the size of your classification, your results will be delivered to the base folder of your Google Drive. Use this option for big downloads where the direct download approach failed.
             </li>
           </ul>
         </p>
       </div>
+
       <div id="step-6" class="section scrollspy">
-        <h4 class="question">How can I save my data/project?</h4>
-        <p class="answer">Remap allows you to save your current workspace so that you can quickly and easily return to work:
+        <h4 class="question">Downloading doesn't seem to work, what should I do?</h4>
+        <p class="answer">  <p> The download feature in remap is particularly complex due to the need to obtain results from the Google Earth Engine API. Remap therefore only allows one download to occur at any one time. If your download doesn't work, you can try:
           <ul class="collection">
             <li class="collection-item">
-              1. Before navigating away from remap, go to <code>7. Export Data</code> and select <code>Download JSON</code>. 
+              1. Wait for the wheel to change to a green tick symbol. Sometimes a remap export can take up to 24 hours to be delivered to your drive. 
             </li>
             <li class="collection-item">
-              2. When you're ready to start work again simply <code>2. Build Training Set</code>, select <code>Upload Data</code> and <code>Upload JSON</code>. Remap will automatically zoom to your region, import your previous training points and you can resume your workflow. 
+              2. Try the alternative method of downloading data. Remap allows direct download of a .zip file to your computer or an export to Google Drive. Each of these works in a different way and is optimised for classifications of different complexity, so it is possible that the alternative method will succeed.
+            </li>
+            <li class="collection-item">
+              3. Try running the classification again. Google Earth Engine caches the results of each classification, so for large classifications it can be a case of waiting for a few hours before clicking classify again. Then retry the download. 
+            </li>
+            <li class="collection-item">
+              4. Make the focal region smaller. If the above cannot solve your issues with exports, then try splitting the classification into smaller regions. After downloading each map, mosaic them together in a GIS program such as QGIS.
+            </li>
+            <li class="collection-item">
+              5. Lastly, get in contact with the remap development team via the feedback form. We will ask you to share your workspace file (.JSON) with us so that we can investigate the issue.
             </li>
           </ul>
         </p>
       </div>
 
       <div id="step-7" class="section scrollspy">
-        <h4 class="question">What is satellite remote sensing?</h4>
-        <p class="answer">  <p> Satellites have been imaging the earth for around 50 years. In that time they have been instrumental in identifying large, detrimental changes to ecosystems. Indeed, the trajectories of many of Earth’s major ecosystem types, such as the –3.7% annual decrease in the extent of tropical peatlands, –2% annual decline of coastal wetlands in East Asia and the >1% net annual change of forests globally were quantified with large-scale remote sensing analyses of satellite data. </p>
-        <p> The basis of all of these observations of ecosystem loss and change has been accurate maps of ecosystem distributions. Maps of ecosystems may be developed from a range of sources, but the use of satellites such as Landsat have allowed long-term changes (nearly up to 50 years) to be detected. </p>
-        <p>In remap, we use Landsat satellites and a range of other datasets to develop accurate maps of ecosystem distributions. Our classification methods, which utilise machine learning to rapidly and accurately classify satellite image pixels, are proven to work for a range of ecosystem types.</p>
+        <h4 class="question">How can I save my data/project?</h4>
+        <p class="answer">You can save your remap workspace so that you can quickly and easily return to work:
+          <ul class="collection">
+            <li class="collection-item">
+              1. Go to <code>7. Export Data</code> and select <code>Download JSON</code>. 
+            </li>
+            <li class="collection-item">
+              2. To start work again <code>2. Build Training Set</code>, select <code>Upload Data</code> and <code>Upload JSON</code>. Remap will  zoom to the focal region, import your training set and maintain your colour scheme. 
+            </li>
+          </ul>
+        </p>
       </div>
 
       <div id="step-8" class="section scrollspy">
-        <h4 class="question">What is the IUCN Red List of Ecosystems?</h4>
-        <p class="answer">The <a href="http://www.iucnrle.org/">IUCN Red List of Ecosystems</a> identifies ecosystems as Critically Endangered, Endangered, Vulnerable or Least Concern. Together, the Red Lists for species and ecosystems will provide a more comprehensive view of the status of the environment and its biodiversity than either can on its own. Find out more about the IUCN Red List of Ecosystems: <a href="http://www.iucnrle.org/">www.iucnrle.org</a> </p>
-      </div>
-      <div id="step-9" class="section scrollspy">
-        <h4 class="question">How can I support Remap?</h4>
-        <p class="answer">Remap was developed with funding from a <a href="https://earthengine.google.com/">Google Earth Engine</a> research award. We appreciate feedback to help further develop Remap into a tool that helps assess and conserve ecosystems across the world.</p>
+        <h4 class="question">How many training points do I need?</h4>
+        <p class="answer">  <p> Remap will perform best with a comprehensive and sufficient training set. Try running the classifier with >20 points per class, and if the classification is unsatisfactory simply add more training points.</a>. </p>
       </div>
 
+
+      <div id="step-8" class="section scrollspy">
+        <h4 class="question">Can I delete a training point?</h4>
+        <p class="answer">  <p> Yes. Double click on the training point to delete it.</a>. </p>
+      </div>
+
+      <div id="step-9" class="section scrollspy">
+        <h4 class="question">Remap is not producing accurate maps. What can I do?</h4>
+        <p class="answer">
+          There are a number of choices that can be made to produce the most accurate map classifications. Try these steps to produce the most accurate map possible:
+          <ul class="collection">
+            <li class="collection-item">
+            <b>1. Add more training data</b><p>
+              Remap uses a machine learning classification method called Random Forest (RF). RF requires training data (the training set, a set of observations depicting accurate locations of each map class) that are used to teach the classifier the most likely class that a pixel belongs to. Without a sufficient amount of training data, the classifier will perform poorly and may produce a map where pixels appear to be randomly assigned to each class. To overcome this a sufficient training set (>50 point per class) is necessary. Remap will warn you if there are less than 20 training points in any class of your training set.
+            </li>
+            <li class="collection-item">
+              <b>2. Modify the predictor set</b><p>
+              The classifier predicts class membership of each pixel using the training set. To acheive this, it utilises information from a set of predictor layers. The default set of biophysical (<a href="https://explorer.earthengine.google.com/#detail/USGS%2FSRTMGL1_003">slope, elevation</a>), spectral (<a href="https://explorer.earthengine.google.com/#detail/LANDSAT%2FLC8_SR">Landsat Archive imagery</a>) and climatic (<a href="https://explorer.earthengine.google.com/#detail/WORLDCLIM%2FV1%2FBIO">precipitation, temperature</a>) predictors generally perform well across a variety of landscapes. However, you can tune the predictor set to incorporate extra predictors that are expected to strongly influence the distribution of particular land cover types. 
+            </li>
+            <li class="collection-item">
+              <b>3. Add more classes to your training set:</b><p>
+              Remap will classify the landscape only into the classes you provide it. Therefore, in cases where there are many contrasting map classes, it may be necessary to carefully think through the best set of classes that remap will need to distinguish. For example, in mapping mangrove ecosystems you will get a better results if you map mangroves, water and land (3 classes), rather than simply mangroves and other (2 classes).
+            </li>
+            <li class="collection-item">
+              <b>4. Consider migrating your analysis to Google Earth Engine:</b><p>
+              Remap was developed to provide access to cutting edge remote sensing methods. However, for some remote sensing problems it remains necessary to develop specialised remote sensing methods. For example, for marine ecosystem types that are inundated by water, or for land cover types that undergo complex temporal changes throughout the growing season, a specialised remote sensing method may be required. In this case consider collaborating with experts in remote sensing or implement your own classification workflow directly in <a href="https://earthengine.google.com/">Google Earth Engine</a>. 
+            </li>
+          </ul>
+        </p>
+      </div>
+
+      <div id="step-10" class="section scrollspy">
+        <h4 class="question">The results and assessment tab is not loading, what can I do?</h4>
+        <p class="answer">  <p>Remap calculates these results on the fly. In some circumstances the computation may time out due to limits placed on remap by the Google Earth Engine. If the results or assessment tabs do not load, wait for two minutes and try again to access the cached results. </p>
+      </div>
+
+
+
+      <div id="step-11" class="section scrollspy">
+        <h4 class="question">What are AOO and EOO?</h4>
+        <p class="answer">Extent of occurrence (EOO) and area of occupancy (AOO) are two standardized measures of geographic range size used in both IUCN red list criteria. Neither AOO nor EOO is intended to be a precise estimate of total area in which a species or ecosystem occurs. Rather, in risk assessment protocols such as the IUCN red lists they function as standardized, complementary and widely applicable measures of risk-spreading against spatially explicit threats. EOO is measured by a minimum convex polygon encompassing all known occurrences of a species or ecosystem. AOO is an index related to total occupied area, estimated by summing the areas of grid cells of a standard size (~2×2 km for species and 10×10 km for ecosystems. Refer to the <a href="https://portals.iucn.org/library/node/45794 ">IUCN Red List of Ecosystems guidelines</a> or <a href="http://onlinelibrary.wiley.com/doi/10.1111/ddi.12533/abstract">Murray et al (2017)</a> for further information.</p>
+      </div>
+
+      <div id="step-12" class="section scrollspy">
+        <h4 class="question">What should I do if I spot a bug or error?</h4>
+        <p class="answer">Please report the bug to us through our <a href="https://goo.gl/forms/etRt1SYclK6mz8993">feedback form</a> so we can fix it. </p>
+      </div>
+
+      <div id="step-13" class="section scrollspy">
+        <h4 class="question">Where can I read more about remap?</h4>
+        <p class="answer">     See the <a href="/about">About</a> page or read our <a href="https://doi.org/10.1101/212464">paper</a> for more information about remap. Remap was also recently featured in an article in <a href="https://www.nature.com/articles/d41586-018-03924-9">Nature</a>. </p>
+      </div>
+
+      <div id="step-14" class="section scrollspy">
+        <h4 class="question">How can I support remap?</h4>
+        <p class="answer">Remap was developed with funding from a <a href="https://earthengine.google.com/">Google Earth Engine</a> research award. We appreciate all support feedback to help further develop remap into a tool that helps monitor and conserve the environment. </p>
+      </div>
 
     </div>
+    
     <div class="col hide-on-small-only m3 l2">
       <div class="toc-wrapper" id="faq-toc">
         <ul class="section table-of-contents">
           <li><a href="#step-1">Map classes</a></li>
-          <li><a href="#step-2">Size limits</a></li>
-          <li><a href="#step-3">Classification accuracy</a></li>
-          <li><a href="#step-4">AOO and EOO?</a></li>
-          <li><a href="#step-5">Data upload issues</a></li>
-          <li><a href="#step-6">Saving your data</a></li>
-          <li><a href="#step-7">Satellite remote sensing</a></li>
-          <li><a href="#step-8">IUCN Red List of Ecosystems</a></li>
-          <li><a href="#step-9">Support Remap</a></li>
+          <li><a href="#step-2">Connectivity</a></li>
+          <li><a href="#step-3">Size limits</a></li>
+          <li><a href="#step-4">Satellite imagery</a></li>
+          <li><a href="#step-5">Uploading data</a></li>
+          <li><a href="#step-6">Downloading data</a></li>
+          <li><a href="#step-7">Saving data</a></li>
+          <li><a href="#step-8">Training points</a></li>
+          <li><a href="#step-9">Map accuracy</a></li>
+          <li><a href="#step-10">Results & assessment</a></li>
+          <li><a href="#step-11">AOO and EOO</a></li>
+          <li><a href="#step-12">Bug reports</a></li>
+          <li><a href="#step-13">About remap</a></li>
+          <li><a href="#step-14">Supporting remap</a></li>
         </ul>
       </div>
     </div>

@@ -17,10 +17,14 @@
       email-address(v-if="emailAddress")
       md-list-item
         md-icon info
-        span
-          a(href="/about") About
-          |  and 
-          a(href="/methods") Methods 
+        span.md-body-1
+          a.clickable(@click='helpModal') Help
+          | , 
+          a(href="/about", target="_blank") About
+          | , 
+          a(href="/methods"  target="_blank") Methods 
+          | and 
+          a.clickable(@click='openCitation') Citation
 </template>
 
 <script>
@@ -42,7 +46,7 @@ import { mapGetters } from 'vuex'
 export default {
   name: 'sidebar',
   store,
-  computed: mapGetters(['emailAddress']),
+  computed: mapGetters(['emailAddress', 'citation']),
   components: {
     Assessment,
     BuildTraining,
@@ -56,6 +60,21 @@ export default {
     Results,
     SearchBox,
     SelectPredictors
+  },
+  methods: {
+    helpModal: function () {
+      this.$modal.show('helpModal')
+    },
+    openCitation () {
+      this.$modal.show('dialog', {
+        text: this.citation,
+        buttons: [
+          {
+            title: 'Close'
+          }
+        ]
+      })
+    }
   }
 }
 </script>
@@ -68,6 +87,14 @@ img {
 #searchItem .md-list-item-container {
   padding: 0 !important;
   min-height: 0px !important;
+}
+
+.clickable {
+	cursor: pointer;
+	-webkit-user-select: none;  /* Chrome all / Safari all */
+  -moz-user-select: none;     /* Firefox all */
+  -ms-user-select: none;      /* IE 10+ */
+  user-select: none;          /* Likely future */
 }
 
 .md-sidenav-content {

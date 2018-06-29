@@ -12,15 +12,6 @@
           md-select(name="predictorVis", v-model="predVis", @change="getPredictorLayer(true)")
             md-option(value='natural') Natural
             md-option(v-for='(predictor, index) in predictorVis', :value='predictor.short_name', :key='index') {{ predictor.short_name }}
-      md-list-item(v-if="sigmaDisplayed")
-        md-input-container
-          label(for="sigmaVis") Sigma:
-          md-select(name="sigmaVis", v-model="sigma" @change="getPredictorLayer(false)")
-            md-option(value='1') 1
-            md-option(value='1.5') 1.5
-            md-option(value='2', selected="true") 2
-            md-option(value='2.5') 2.5
-            md-option(value='3') 3
 </template>
 
 <script>
@@ -30,10 +21,7 @@ export default {
   name: 'map-control',
   store,
   computed: {
-    ...mapGetters(['predictorVis', 'region', 'past', 'showMarkers']),
-    sigmaDisplayed: function () {
-      return ['natural', 'past-natural'].indexOf(this.predVis) === -1
-    }
+    ...mapGetters(['predictorVis', 'region', 'past', 'showMarkers'])
   },
   data () {
     return {
@@ -93,7 +81,9 @@ export default {
           mapid: x.body.mapid,
           token: x.body.token
         })
+        this.setLoadingTiles(false)
       }).catch(err => {
+        this.setLoadingTiles(false)
         console.log(err)
         vm.$toasted.show('Error getting predictor layer.', { duration: 5000 })
       })
@@ -113,5 +103,8 @@ export default {
 
 .md-select-content {
   max-height: 100%;
+}
+.md-input-container > p {
+  text-align: center;
 }
 </style>

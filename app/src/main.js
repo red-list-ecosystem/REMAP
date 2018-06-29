@@ -8,14 +8,14 @@ import * as VueGoogleMaps from 'vue2-google-maps'
 import VModal from 'vue-js-modal'
 import Toasted from 'vue-toasted'
 import VueCharts from 'vue-charts'
-import VueReource from 'vue-resource'
+import VueResource from 'vue-resource'
 import VueAnalytics from 'vue-analytics'
 
 Vue.config.productionTip = false
 
 var VueTruncate = require('vue-truncate-filter')
 
-Vue.use(VueReource)
+Vue.use(VueResource)
 Vue.use(VueMaterial)
 Vue.use(VueGoogleMaps, {
   load: {
@@ -23,9 +23,10 @@ Vue.use(VueGoogleMaps, {
     libraries: 'places'
   }
 })
-Vue.use(VModal)
+Vue.use(VModal, { dialog: true })
 Vue.use(Toasted)
 Vue.use(VueCharts)
+Vue.use(VueTruncate)
 Vue.use(VueAnalytics, {
   id: 'UA-98429542-1'
 })
@@ -40,7 +41,6 @@ Vue.material.registerTheme('default', {
     hue: 900
   }
 })
-Vue.use(VueTruncate)
 /* eslint-disable no-new */
 new Vue({
   el: '#app',

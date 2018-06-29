@@ -21,20 +21,24 @@ APP_CREDENTIALS = oauth2client.service_account.ServiceAccountCredentials.from_js
 APP_DRIVE_HELPER = drive.DriveHelper(APP_CREDENTIALS)
 
 # clears out exported files that errored before deletion
-
-
+# also clears out training data from the datastore
 class Clean(webapp2.RequestHandler):
     def get(self):
         while True:
             files = APP_DRIVE_HELPER.GetExportedFiles('')
             now = datetime.utcnow()
+            fileIds = []
             for f in files:
                 cDate = datetime.strptime(
                     f['createdDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
                 if now - cDate > timedelta(hours=2):
-                    APP_DRIVE_HELPER.DeleteFile(f['id'])
+                    fileIds.append(f['id'])
+            if len(fileIds) > 0:
+                APP_DRIVE_HELPER.BatchDeleteFiles(fileIds)
             if len(files) < 100:
                 break
+        beforeTime = datetime.utcnow() - timedelta(hours=2)
+        datastoreClearOldTraining(beforeTime)
 
 
 class OAuth(BaseHandler):
@@ -83,21 +87,40 @@ class Export(GetMapData):
 
     def post(self):
         datastoreProgress(self.session['email'], 'IN_PROGRESS')
+        dataKey = datastoreTraining(self.request.body)
         taskqueue.add(
             url='/exportworker',
             params={
-                'data': self.request.body,
+                'dataKey': dataKey.urlsafe(),
                 'ip': self.request.remote_addr,
                 'credentials': self.session['credentials'],
-                'email': self.session['email']
+                'email': self.session['email'],
+                'User-Agent': self.request.headers.get('User-Agent')
             })
         self.response.write(json.dumps({}))
 
 
 class ExportWorker(GetMapData):
+    def dispatch(self):
+        try:
+            retryCount = int(self.request.headers.get(
+                'X-AppEngine-TaskExecutionCount'))
+            if retryCount >= 1:
+                # stop retrying
+                datastoreProgress(self.request.get('email'), 'ERROR')
+                return
+        except:
+            pass
+        self.data = getDatastoreTraining(self.request.get('dataKey'))
+        if self.data is None:
+            datastoreProgress(self.request.get('email'), 'ERROR')
+            self.response.set_status(417)
+            return self.response.write('Data gone. Try again.')
+        super(ExportWorker, self).dispatch()
+
     def build_meta_file(self):
-        header = ['Class, GeoTIFF Value']
-        meta_list = header + ["%s, %s" % (c['name'], i + 1)
+        header = ['Class, GeoTIFF Value, Number of Points']
+        meta_list = header + ["%s, %s, %s" % (c['name'], i + 1, len(c['points']))
                               for i, c in enumerate(self.classes)]
         # meta_list.append('missing_data, 0')
         meta_list.append('pixel_scale_m, ' + str(config.EXPORT_TIFF_SCALE))
@@ -109,17 +132,9 @@ class ExportWorker(GetMapData):
         return '\n'.join(meta_list)
 
     def post(self):
-        try:
-            retryCount = int(self.request.headers.get(
-                'X-AppEngine-TaskExecutionCount'))
-            if retryCount >= 1:
-                # stop retrying
-                return
-        except:
-            pass
         meta_file = self.build_meta_file()
         datastore(self.request.get('ip'),
-                  self.request.headers.get('User-Agent'),
+                  self.request.get('User-Agent'),
                   sum([len(label['points']) for label in self.classes]),
                   len(self.classes),
                   True,
@@ -165,11 +180,11 @@ class ExportWorker(GetMapData):
                     'REMAP metadata ' + export_time + '.csv', meta_file, folder)
                 for f in files:
                     try: 	# will fail if the user doesn't have the right permissions
-                                            # just ignore it since it might have accidentally found someone else's file
+                          # just ignore it since it might have accidentally found someone else's file
                         user_drive_helper.CopyFile(f['id'], file_name, folder)
+                        APP_DRIVE_HELPER.DeleteFile(f['id'])
                     except:
                         pass
-                APP_DRIVE_HELPER.DeleteFile(f['id'])
             datastoreProgress(self.request.get('email'), 'COMPLETED')
         else:
             datastoreProgress(self.request.get('email'), 'ERROR')

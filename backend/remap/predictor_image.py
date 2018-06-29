@@ -8,8 +8,8 @@ from parameters import *
 
 def predictor_image(past=False):
     """ Returns an ee image, that will be used as a predictor.
-            start_date, and end_date currently do nothing, as we are loading a precomputed landsat image.
-            with predictors as bands. missing data is given the value of -20k
+        start_date, and end_date currently do nothing, as we are loading a precomputed landsat image.
+        with predictors as bands. missing data is given the value of -20k
     """
     return base_predictor_layer(past).unmask(-20000)
 
@@ -25,9 +25,9 @@ def base_predictor_layer(past=False):
 
     # 3. Landsat 8
     if not past:
-        ls = ee.Image('users/JohnHWilshire/ls_8_cflte1_2k14to17_at_30m_ui8')
+        ls = ee.Image('projects/remap-app/ls_8_cflte1_2k14to17_at_30m_ui8')
     else:
-        ls = ee.Image('users/JohnHWilshire/ls_7_self_masked_99_03_at_30m')
+        ls = ee.Image('projects/remap-app/ls_7_self_masked_99_03_at_30m')
 
     return ee.Image([
                     bioclim,

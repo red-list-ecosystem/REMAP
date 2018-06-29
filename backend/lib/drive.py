@@ -79,6 +79,17 @@ class DriveHelper(object):
     """
     self.service.files().delete(fileId=file_id).execute()
 
+  def BatchDeleteFiles(self, file_ids):
+    """Deletes the files with the given IDs.
+
+    Args:
+      file_ids: Array of the IDs of the files to delete.
+    """
+    batch = self.service.new_batch_http_request()
+    for fileID in file_ids:
+      batch.add(self.service.files().delete(fileId=fileID))
+    batch.execute()
+
   def CreateFile(self, file_name, content, parent_folder=None):
     """ Creates a file with the given name and content
 

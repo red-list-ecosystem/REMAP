@@ -98,8 +98,8 @@ export default {
     visArray () {
       this.updateOpacity()
     },
-    mapLayers: function () {
-      var vm = this
+    mapLayers () {
+      var overlays = this.$refs.googlemap.$mapObject.overlayMapTypes
       this.mapLayers
         .map(function (layer, i) {
           var eeMapOptions = {
@@ -114,8 +114,11 @@ export default {
           }
           // Create the map type.
           var mapType = new window.google.maps.ImageMapType(eeMapOptions)
-          vm.$refs.googlemap.$mapObject.overlayMapTypes.setAt(i, mapType)
+          overlays.setAt(i, mapType)
         })
+      if (overlays.length > this.mapLayers.length) {
+        overlays.removeAt(overlays.length - 1)
+      }
     },
     region: function () {
       if (this.region.length === 0) {

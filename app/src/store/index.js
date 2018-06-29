@@ -20,7 +20,8 @@ export default new Vuex.Store({
     past: false,
     predictors: [],
     selectedPredictors: [],
-    maxRegionSize: 100000
+    maxRegionSize: 100000,
+    citation: ''
   },
   getters: {
     editing: state => state.editing,
@@ -48,6 +49,7 @@ export default new Vuex.Store({
     // predictor gets
     predictorVis: state => state.predictors.filter(x => x.vis),
     predictors: state => state.predictors,
+    citation: state => state.citation,
     maxRegionSize: state => state.maxRegionSize,
     past: state => state.past
   },
@@ -58,6 +60,7 @@ export default new Vuex.Store({
     setLoadingTiles: ({ commit }, val) => commit('setLoadingTiles', val),
     setPast: ({ commit }, val) => commit('setPast', val),
     setPredictors: ({ commit }, predictors) => commit('setPredictors', predictors),
+    setCitation: ({ commit }, citation) => commit('setCitation', citation),
     selectPredictors: ({ commit }, selected) => commit('selectPredictors', selected),
     setMaxRegionSize: ({ commit }, size) => commit('setMaxRegionSize', size)
   },
@@ -81,6 +84,9 @@ export default new Vuex.Store({
     // Predictors
     setPredictors (state, predictors) {
       state.predictors = predictors
+    },
+    setCitation (state, citation) {
+      state.citation = citation
     },
     selectPredictors (state, predictors) {
       state.selectedPredictors = predictors

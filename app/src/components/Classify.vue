@@ -1,5 +1,5 @@
 <template lang='pug'>
-    md-list-item(@click='giveTraining')
+    md-list-item(@click='check')
         md-icon play_arrow
         span Classify!
 </template>
@@ -19,11 +19,33 @@ export default {
       'mapData',
       'past'
     ]),
+    check () {
+      const lim = 20
+      var tooFew = this.mapData().classList.filter(cl => cl.points.length < lim)
+      if (tooFew.length !== 0) {
+        this.$modal.show('dialog', {
+          title: 'Too few markers',
+          text: `${tooFew[0].name} has too few markers, currently (${tooFew[0].points.length}) we recommend at least ${lim} per class.`,
+          buttons: [
+            {
+              title: 'Classify',
+              handler: this.giveTraining
+            },
+            {
+              title: 'Close'
+            }
+          ]
+        })
+      } else {
+        this.giveTraining()
+      }
+    },
     giveTraining () {
       var md = this.mapData()
       this.setLoadingTiles(true)
       this.$http.post('/api/map', md).then(x => {
         var response = x.body.pop()
+        this.setLoadingTiles(false)
         this.addMapLayer({
           type: 'classification',
           name: `Classification ${md.past ? '99-03' : '14-17'}`,
@@ -40,7 +62,6 @@ export default {
   }
 }
 </script>
-
 <style scoped>
 .md-button {
   width: 100%;
